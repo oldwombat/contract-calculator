@@ -81,21 +81,119 @@ See the [ATO's PSI guidance](https://www.ato.gov.au/individuals-and-families/inc
 
 **File structure:**
 ```
-index.html       — layout and markup
-style.css        — all styling
-calculator.js    — pure calculation functions (no DOM access)
-app.js           — DOM wiring and rendering
-plan.md          — feature spec and PSI rules reference
-autopilot.md     — deployment and GitHub Pages setup guide
+index.html          — layout and markup
+style.css           — all styling
+calculator.js       — pure calculation functions (no DOM access)
+app.js              — DOM wiring and rendering
+plan.md             — feature spec and PSI rules reference
+autopilot.md        — deployment and GitHub Pages setup guide
+playwright.config.js — Playwright test configuration
+tests/
+  interaction.spec.js — functional UI tests (inputs, toggles, calculations)
+  visual.spec.js      — screenshot capture at desktop + mobile
+  screenshot.js       — standalone screenshot utility (no test runner)
+  screenshots/        — captured images for visual reference
 ```
 
 `calculator.js` exports a single `Calculator` object with pure functions that can be tested independently of the UI.
 
 ---
 
-## Running Locally
+## Testing with Playwright
 
-No build step needed — just open the file:
+The project uses [Playwright](https://playwright.dev) to run automated browser tests against the **live GitHub Pages site**. Tests open a real Chromium browser, interact with the page, and assert on results — no mocking, no simulated DOM.
+
+### Quick start
+
+```bash
+npm install                  # install Playwright and @playwright/test
+npx playwright install chromium   # download the browser binary (first time only)
+npm test                     # run all tests
+```
+
+### What's tested
+
+| File | What it covers |
+|---|---|
+| `tests/interaction.spec.js` | Functional behaviour — calculations, mode switching, toggle states |
+| `tests/visual.spec.js` | Full-page screenshots saved to `tests/screenshots/` |
+
+**`interaction.spec.js` test groups:**
+
+- **Default $120k salary** — net take-home is in the expected range (~$89k after tax/Medicare/MLS); card contains key rows like Taxable income, Medicare, Net take-home
+- **Contract rate mode** — switching to "I know my rate" shows the rate input, hides the salary input, updates the break-even panel label, and recalculates all cards when the rate changes
+- **PSI toggle** — "Retain profit" checkbox starts disabled (PSI on by default); turning PSI off enables it
+- **FBT-exempt EV toggle** — EV cost input row starts hidden; clicking the toggle reveals it
+
+### How the config works (`playwright.config.js`)
+
+```js
+module.exports = defineConfig({
+  testDir: './tests',
+  testMatch: '**/*.spec.js',  // picks up any .spec.js file in tests/
+  timeout: 60000,             // 60s per test — GitHub Pages can take ~10s to load
+  use: {
+    baseURL: 'https://oldwombat.github.io',
+    navigationTimeout: 30000,
+  },
+  projects: [
+    { name: 'desktop', use: { viewport: { width: 1280, height: 900 } } },
+    { name: 'mobile',  use: { ...devices['iPhone 14'] } },
+  ],
+});
+```
+
+Key decisions:
+- **`baseURL: 'https://oldwombat.github.io'`** — tests navigate to `/contract-calculator/`. Using a sub-path as the base URL doesn't work with `goto('/')` because `/` is treated as an absolute path, which would resolve to the root domain, not the sub-path. Keeping the base as the origin avoids this.
+- **`timeout: 60000`** — the default 30s is too tight; GitHub Pages navigation alone can take 8–10s, leaving no budget for the `waitForFunction` call.
+- **Two projects (desktop + mobile)** — both run the same tests at different viewports. Playwright runs them in parallel by default.
+
+### How tests wait for JS to render
+
+The calculator renders results via JavaScript after `DOMContentLoaded`. Playwright's `page.goto()` resolves after the HTML `load` event, but the card `<div>`s start empty and get filled by `app.js`. Tests use:
+
+```js
+await page.waitForFunction(() => {
+  const body = document.querySelector('#card-salary-body');
+  return body && body.children.length > 3;
+});
+```
+
+This polls the DOM inside the browser until the card has rendered its rows. It's more reliable than `waitForSelector` with `state: 'visible'` (which uses `actionTimeout`) or a fixed `waitForTimeout` delay.
+
+### Clicking custom toggle switches
+
+The toggle checkboxes (`#pty-psi`, `#pty-ev`, etc.) are visually hidden — the CSS sets `opacity:0; width:0; height:0` — and a styled `<span class="toggle-track">` sits inside the same `<label>` as the checkbox. Playwright correctly refuses to click a zero-size invisible element. The fix is to click the parent label:
+
+```js
+await page.locator('label:has(#pty-psi)').click();
+```
+
+### Running locally against a local server
+
+Change the `baseURL` in `playwright.config.js`:
+
+```js
+baseURL: 'http://localhost:8080',
+// then navigate to: page.goto('/')
+```
+
+And serve the files first:
+
+```bash
+python3 -m http.server 8080
+npm test
+```
+
+### Taking screenshots manually
+
+```bash
+npm run screenshot   # runs tests/screenshot.js — captures desktop + mobile to tests/screenshots/
+```
+
+---
+
+## Running Locally
 
 ```bash
 git clone https://github.com/oldwombat/contract-calculator.git
