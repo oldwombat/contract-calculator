@@ -66,10 +66,83 @@
   const pcPaygSuper     = $('pc-payg-super');
   const pcPtyRetain     = $('pc-pty-retain');
 
+  // Reset button
+  const btnReset = $('btn-reset');
+
   // ── State ───────────────────────────────────────────────────────────────
 
   let inputMode  = 'salary';  // 'salary' | 'rate'
   let rateType   = 'daily';   // 'daily'  | 'hourly'
+
+  // ── localStorage persistence ─────────────────────────────────────────────
+
+  const STORAGE_KEY = 'contractCalc_v1';
+
+  // All number inputs and checkboxes we want to persist
+  const NUMBER_INPUTS = [
+    'salary','daily-rate','hourly-rate',
+    'annual-leave','public-holidays','sick-leave','gap-days','hours-per-day',
+    'super-rate','abn-expenses','pty-running-costs','pty-ev-cost'
+  ];
+  const CHECKBOX_INPUTS = [
+    'private-health','payg-super','pty-psi','pty-retain','pty-ev'
+  ];
+
+  function saveState() {
+    try {
+      const state = { inputMode, rateType };
+      NUMBER_INPUTS.forEach(id => {
+        const el = $(id);
+        if (el) state[id] = el.value;
+      });
+      CHECKBOX_INPUTS.forEach(id => {
+        const el = $(id);
+        if (el) state[id] = el.checked;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { /* storage unavailable — silent fail */ }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const state = JSON.parse(raw);
+
+      // Restore mode buttons first (they control visibility)
+      if (state.inputMode === 'rate') {
+        inputMode = 'rate';
+        btnModeRate.classList.add('active');
+        btnModeSalary.classList.remove('active');
+        salaryGroup.hidden = true;
+        rateGroup.hidden   = false;
+      }
+      if (state.rateType === 'hourly') {
+        rateType = 'hourly';
+        btnRateHourly.classList.add('active');
+        btnRateDaily.classList.remove('active');
+        dailyRateRow.hidden  = true;
+        hourlyRateRow.hidden = false;
+      }
+
+      NUMBER_INPUTS.forEach(id => {
+        const el = $(id);
+        if (el && state[id] !== undefined) el.value = state[id];
+      });
+      CHECKBOX_INPUTS.forEach(id => {
+        const el = $(id);
+        if (el && state[id] !== undefined) el.checked = state[id];
+      });
+
+      // Re-apply derived UI state from restored checkboxes
+      ptyEvCostRow.hidden = !inPtyEv.checked;
+    } catch (e) { /* corrupted data — silent fail */ }
+  }
+
+  function resetState() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    location.reload();
+  }
 
   // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -417,6 +490,7 @@
     } catch (e) {
       console.error('Calculation error:', e);
     }
+    saveState();
   }
 
   // ── Input synchronisation ────────────────────────────────────────────────
@@ -507,7 +581,10 @@
 
   // ── Init ─────────────────────────────────────────────────────────────────
 
+  loadState();       // restore saved inputs before first render
   updatePsiUi();
   recalculate();
+
+  btnReset.addEventListener('click', resetState);
 
 })();
