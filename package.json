@@ -1,0 +1,28 @@
+{
+  "name": "contract-calculator",
+  "version": "1.0.0",
+  "description": "> **Australian salary vs contracting — what are you actually worth?**",
+  "main": "app.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:visual": "npx playwright test tests/visual.spec.js",
+    "test:interaction": "npx playwright test tests/interaction.spec.js",
+    "screenshot": "node tests/screenshot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oldwombat/contract-calculator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/oldwombat/contract-calculator/issues"
+  },
+  "homepage": "https://github.com/oldwombat/contract-calculator#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "playwright": "^1.58.2"
+  }
+}

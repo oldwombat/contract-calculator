@@ -319,6 +319,17 @@
     const eq  = Calculator.equivalentSalaryFromRate(inputs);
     const sal = inputs.salary;
     const salPkg = sal * (1 + inputs.superRate);
+    const rate = inputs.contractDailyRate;
+
+    const thirdLabel  = inputMode === 'salary'
+      ? 'Break-even rate used above'
+      : 'Your contract rate = salary of';
+    const thirdValue  = inputMode === 'salary'
+      ? fmtRate(rate) + '/day'
+      : fmtCurrency(eq.equivalentSalary);
+    const thirdSub    = inputMode === 'salary'
+      ? fmtCurrencyDecimal(rate / inputs.days.hoursPerDay) + '/hr &nbsp;·&nbsp; ' + Calculator.contractorBillableDays(inputs.days) + ' billable days'
+      : 'equiv. package ' + fmtCurrency(eq.equivalentPackage);
 
     breakevenBox.innerHTML = `
       <div class="be-heading">Break-even analysis</div>
@@ -336,9 +347,9 @@
         </div>
         <div class="be-divider"></div>
         <div class="be-item">
-          <span class="be-label">Your contract rate = salary of</span>
-          <span class="be-value">${fmtCurrency(eq.equivalentSalary)}</span>
-          <span class="be-sub">equiv. package ${fmtCurrency(eq.equivalentPackage)}</span>
+          <span class="be-label">${thirdLabel}</span>
+          <span class="be-value">${thirdValue}</span>
+          <span class="be-sub">${thirdSub}</span>
         </div>
       </div>
     `;

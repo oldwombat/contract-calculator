@@ -161,6 +161,7 @@ main {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--gap);
+  align-items: start;
 }
 
 fieldset.input-group {
@@ -248,22 +249,23 @@ input[type="number"]::-webkit-outer-spin-button { opacity: .4; }
 .toggle-row { gap: 1rem; }
 
 .toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
   cursor: pointer;
 }
 
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
 
 .toggle-track {
-  position: absolute;
-  inset: 0;
+  display: block;
+  width: 44px;
+  height: 24px;
   background: #d1d5db;
   border-radius: 12px;
   transition: background .2s;
+  position: relative;
+  flex-shrink: 0;
 }
 
 .toggle-track::after {
@@ -489,8 +491,9 @@ input[type="number"]::-webkit-outer-spin-button { opacity: .4; }
   background: var(--color-bg);
   border-radius: var(--radius-sm);
   display: flex;
-  gap: 1rem;
+  gap: .75rem 1rem;
   justify-content: space-around;
+  flex-wrap: wrap;
 }
 
 .card-rate-item {
@@ -705,6 +708,18 @@ footer {
   .breakeven-box { padding: 1.2rem; }
   .breakeven-box .be-value { font-size: 1.4rem; }
   .breakeven-box .be-divider { display: none; }
+
+  input[type="number"] { width: 76px; font-size: .85rem; }
+
+  .input-row {
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .input-row label { min-width: 100%; }
+  .input-row.toggle-row { flex-wrap: nowrap; }
+  .input-row.toggle-row label:first-child { min-width: 0; flex: 1; }
+
+  .card-rates { justify-content: flex-start; gap: .75rem 1.5rem; }
 }
 
 @media (min-width: 900px) {
