@@ -1,0 +1,455 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Contract Rate Calculator" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Australian salary vs contracting — what are you actually worth?
+  - main [ref=e6]:
+    - region "Calculator inputs" [ref=e7]:
+      - group "Input mode" [ref=e8]:
+        - button "I know my salary" [ref=e9] [cursor=pointer]
+        - button "I know my contract rate" [ref=e10] [cursor=pointer]
+      - generic [ref=e11]:
+        - group "Annual Salary" [ref=e12]:
+          - generic [ref=e13]: Annual Salary
+          - generic [ref=e14]:
+            - generic [ref=e15]: Salary (excl. super)
+            - generic [ref=e16]:
+              - generic [ref=e17]: $
+              - spinbutton "Salary (excl. super)" [ref=e18]: "120000"
+        - group "Working Days (per year)" [ref=e19]:
+          - generic [ref=e20]: Working Days (per year)
+          - generic [ref=e21]:
+            - generic [ref=e22]: Annual leave days
+            - spinbutton "Annual leave days" [ref=e23]: "20"
+          - generic [ref=e24]:
+            - generic [ref=e25]: Public holidays
+            - spinbutton "Public holidays" [ref=e26]: "10"
+          - generic [ref=e27]:
+            - generic [ref=e28]: Sick leave days
+            - spinbutton "Sick leave days" [ref=e29]: "10"
+          - generic [ref=e30]:
+            - generic [ref=e31]:
+              - text: Contractor gap days
+              - generic [ref=e32]: Unbillable days between contracts
+            - spinbutton "Contractor gap days Unbillable days between contracts" [ref=e33]: "15"
+          - generic [ref=e34]:
+            - generic [ref=e35]: Hours per day
+            - spinbutton "Hours per day" [ref=e36]: "8"
+          - generic [ref=e37]:
+            - strong [ref=e38]: "230"
+            - text: effective salary days |
+            - strong [ref=e39]: "235"
+            - text: contractor billable days
+        - group "Rates & Offsets" [ref=e40]:
+          - generic [ref=e41]: Rates & Offsets
+          - generic [ref=e42]:
+            - generic [ref=e43]: Super rate (SG)
+            - generic [ref=e44]:
+              - spinbutton "Super rate (SG)" [ref=e45]: "11.5"
+              - generic [ref=e46]: "%"
+          - generic [ref=e47]:
+            - generic [ref=e48]: Private hospital cover
+            - generic "Private health insurance" [ref=e49] [cursor=pointer]:
+              - checkbox "Private hospital cover Private health insurance"
+          - paragraph [ref=e51]: No private cover + income >$93k attracts Medicare Levy Surcharge (1–1.5%)
+        - group "PAYG Contractor" [ref=e52]:
+          - generic [ref=e53]: PAYG Contractor
+          - generic [ref=e54]:
+            - generic [ref=e55]: Agency pays super
+            - generic "Agency pays super" [ref=e56] [cursor=pointer]:
+              - checkbox "Agency pays super Agency pays super"
+          - paragraph [ref=e58]: Some labour-hire agencies pay super on top of your rate; many do not.
+        - group "ABN Sole Trader" [ref=e59]:
+          - generic [ref=e60]: ABN Sole Trader
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - text: Annual business expenses
+              - generic [ref=e63]: Accountant, insurance, equipment, etc.
+            - generic [ref=e64]:
+              - generic [ref=e65]: $
+              - spinbutton "Annual business expenses Accountant, insurance, equipment, etc." [ref=e66]: "2000"
+        - group "Pty Ltd Company" [ref=e67]:
+          - generic [ref=e68]: Pty Ltd Company
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - text: Company running costs
+              - generic [ref=e71]: ASIC fees, accountant, insurance
+            - generic [ref=e72]:
+              - generic [ref=e73]: $
+              - spinbutton "Company running costs ASIC fees, accountant, insurance" [ref=e74]: "3500"
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - text: PSI rules apply
+              - generic [ref=e77]: Personal Services Income — applies to most single-client contractors
+            - generic "PSI rules apply" [ref=e78] [cursor=pointer]:
+              - checkbox "PSI rules apply Personal Services Income — applies to most single-client contractors PSI rules apply" [checked]
+          - generic [ref=e80]:
+            - strong [ref=e81]: What is PSI?
+            - text: If 80%+ of your company's income comes from your personal skills/efforts for one client, PSI rules apply. Your income is taxed at personal marginal rates regardless — the 25% company profit-retention benefit is
+            - emphasis [ref=e82]: not available
+            - text: .
+            - link "Learn more ↓" [ref=e83] [cursor=pointer]:
+              - /url: "#psi-detail"
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - text: Retain profit in company
+              - generic [ref=e86]: Not available — PSI rules attribute income to you personally
+            - generic "Retain profit in company" [ref=e87] [cursor=pointer]:
+              - checkbox "Retain profit in company Not available — PSI rules attribute income to you personally Retain profit in company" [disabled]
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - text: FBT-exempt EV
+              - generic [ref=e91]: Company-provided electric vehicle (below luxury threshold)
+            - generic "FBT-exempt EV" [ref=e92] [cursor=pointer]:
+              - checkbox "FBT-exempt EV Company-provided electric vehicle (below luxury threshold) FBT-exempt EV"
+          - generic [ref=e94]:
+            - generic [ref=e95]: Annual EV cost (lease + running)
+            - generic [ref=e96]:
+              - generic [ref=e97]: $
+              - spinbutton "Annual EV cost (lease + running)" [ref=e98]: "15000"
+    - region "Break-even summary" [ref=e99]:
+      - generic [ref=e100]:
+        - generic [ref=e101]: Break-even analysis
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e104]: Salary
+            - generic [ref=e105]: $120,000
+            - generic [ref=e106]: + $13,800 super = $133,800 pkg
+          - generic [ref=e108]:
+            - generic [ref=e109]: Min. contract rate to match
+            - generic [ref=e110]: $569/day
+            - generic [ref=e111]: $71.17/hr · 235 billable days
+          - generic [ref=e113]:
+            - generic [ref=e114]: Break-even rate used above
+            - generic [ref=e115]: $569/day
+            - generic [ref=e116]: $71.17/hr · 235 billable days
+    - region "Scenario comparison" [ref=e117]:
+      - heading "Comparison results" [level=2] [ref=e118]
+      - generic [ref=e119]:
+        - article [ref=e120]:
+          - generic [ref=e121]:
+            - heading "Salaried Employee" [level=2] [ref=e122]
+            - generic [ref=e123]: Permanent
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - generic [ref=e126]: Annual salary
+              - generic [ref=e127]: $120,000
+            - generic [ref=e128]:
+              - generic [ref=e129]: Employer super
+              - generic [ref=e130]: $13,800
+            - generic [ref=e131]:
+              - generic [ref=e132]: Total package
+              - generic [ref=e133]: $133,800
+            - generic [ref=e135]:
+              - generic [ref=e136]: Taxable income
+              - generic [ref=e137]: $120,000
+            - generic [ref=e138]:
+              - generic [ref=e139]: Income tax
+              - generic [ref=e140]: −$26,788
+            - generic [ref=e141]:
+              - generic [ref=e142]: Medicare levy
+              - generic [ref=e143]: −$2,400
+            - generic [ref=e144]:
+              - generic [ref=e145]: Medicare Levy Surcharge
+              - generic [ref=e146]: −$1,500
+            - generic [ref=e148]:
+              - generic [ref=e149]: Net take-home
+              - generic [ref=e150]: $89,312
+            - generic [ref=e151]:
+              - generic [ref=e152]:
+                - generic [ref=e153]: Effective daily
+                - generic [ref=e154]: $522
+              - generic [ref=e155]:
+                - generic [ref=e156]: Effective hourly
+                - generic [ref=e157]: $65
+              - generic [ref=e158]:
+                - generic [ref=e159]: Working days
+                - generic [ref=e160]: "230"
+        - article [ref=e161]:
+          - generic [ref=e162]:
+            - heading "PAYG Contractor" [level=2] [ref=e163]
+            - generic [ref=e164]: via Agency
+          - generic [ref=e165]:
+            - generic [ref=e166]:
+              - generic [ref=e167]: Days billed / year
+              - generic [ref=e168]: "235"
+            - generic [ref=e169]:
+              - generic [ref=e170]: Gross income
+              - generic [ref=e171]: $133,800
+            - generic [ref=e173]:
+              - generic [ref=e174]: Taxable income
+              - generic [ref=e175]: $133,800
+            - generic [ref=e176]:
+              - generic [ref=e177]: Income tax
+              - generic [ref=e178]: −$30,928
+            - generic [ref=e179]:
+              - generic [ref=e180]: Medicare levy
+              - generic [ref=e181]: −$2,676
+            - generic [ref=e182]:
+              - generic [ref=e183]: Medicare Levy Surcharge
+              - generic [ref=e184]: −$1,673
+            - generic [ref=e186]:
+              - generic [ref=e187]: Net take-home
+              - generic [ref=e188]: $98,524
+            - generic [ref=e189]:
+              - generic [ref=e190]:
+                - generic [ref=e191]: Daily rate
+                - generic [ref=e192]: $569
+              - generic [ref=e193]:
+                - generic [ref=e194]: Hourly rate
+                - generic [ref=e195]: $71
+            - generic [ref=e196]:
+              - generic [ref=e197]: No employer super. Consider setting aside $15,387/yr (11.5%) yourself.
+              - generic [ref=e198]: Income may exceed $75k GST threshold — check with your agency.
+        - article [ref=e199]:
+          - generic [ref=e200]:
+            - heading "ABN Sole Trader" [level=2] [ref=e201]
+            - generic [ref=e202]: Direct
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - generic [ref=e205]: Days billed / year
+              - generic [ref=e206]: "235"
+            - generic [ref=e207]:
+              - generic [ref=e208]: Gross invoiced
+              - generic [ref=e209]: $133,800
+            - generic [ref=e210]:
+              - generic [ref=e211]: Business expenses
+              - generic [ref=e212]: −$2,000
+            - generic [ref=e214]:
+              - generic [ref=e215]: Taxable income
+              - generic [ref=e216]: $131,800
+            - generic [ref=e217]:
+              - generic [ref=e218]: Income tax
+              - generic [ref=e219]: −$30,328
+            - generic [ref=e220]:
+              - generic [ref=e221]: Medicare levy
+              - generic [ref=e222]: −$2,636
+            - generic [ref=e223]:
+              - generic [ref=e224]: Medicare Levy Surcharge
+              - generic [ref=e225]: −$1,648
+            - generic [ref=e227]:
+              - generic [ref=e228]: Net take-home
+              - generic [ref=e229]: $97,189
+            - generic [ref=e230]:
+              - generic [ref=e231]: Suggested super
+              - generic [ref=e232]: $15,387
+            - generic [ref=e233]:
+              - generic [ref=e234]:
+                - generic [ref=e235]: Daily rate
+                - generic [ref=e236]: $569
+              - generic [ref=e237]:
+                - generic [ref=e238]: Hourly rate
+                - generic [ref=e239]: $71
+            - generic [ref=e240]:
+              - generic [ref=e241]: Gross invoiced exceeds $75k — GST registration required. Charge +10% GST to clients and remit quarterly. GST is not shown here as it is pass-through.
+              - generic [ref=e242]: "No employer super. Suggested voluntary super: $15,387/yr (11.5% of gross)."
+              - generic [ref=e243]: PSI rules may restrict home-office deductions. Income is already taxed at marginal rates so the financial impact is minor.
+        - article [ref=e244]:
+          - generic [ref=e245]:
+            - heading "Pty Ltd Company" [level=2] [ref=e246]
+            - generic [ref=e247]: PSI Applies
+          - generic [ref=e248]:
+            - generic [ref=e249]: ⚠ PSI Applies — profit retention unavailable
+            - generic [ref=e250]:
+              - generic [ref=e251]: Company revenue
+              - generic [ref=e252]: $133,800
+            - generic [ref=e253]:
+              - generic [ref=e254]: Company costs
+              - generic [ref=e255]: −$3,500
+            - generic [ref=e257]:
+              - generic [ref=e258]: Director salary
+              - generic [ref=e259]: $130,300
+            - generic [ref=e261]:
+              - generic [ref=e262]: Income tax
+              - generic [ref=e263]: −$29,878
+            - generic [ref=e264]:
+              - generic [ref=e265]: Medicare levy
+              - generic [ref=e266]: −$2,606
+            - generic [ref=e267]:
+              - generic [ref=e268]: Medicare Levy Surcharge
+              - generic [ref=e269]: −$1,629
+            - generic [ref=e271]:
+              - generic [ref=e272]: Net take-home
+              - generic [ref=e273]: $96,187
+            - generic [ref=e274]:
+              - generic [ref=e275]: Suggested super
+              - generic [ref=e276]: $14,985
+            - generic [ref=e277]:
+              - generic [ref=e278]:
+                - generic [ref=e279]: Daily rate
+                - generic [ref=e280]: $569
+              - generic [ref=e281]:
+                - generic [ref=e282]: Hourly rate
+                - generic [ref=e283]: $71
+            - generic [ref=e284]:
+              - generic [ref=e285]: "PSI rules apply: income is attributed to you personally. Profit cannot be retained at the 25% company tax rate."
+              - generic [ref=e286]: "Company still provides legitimate deductions: running costs, accountant fees, insurance."
+              - generic [ref=e287]: "Suggested voluntary super: $14,985/yr."
+    - region "Pros and cons comparison" [ref=e288]:
+      - heading "Pros & Cons" [level=2] [ref=e289]
+      - table [ref=e291]:
+        - rowgroup [ref=e292]:
+          - row "Feature Salary PAYG ABN Pty Ltd" [ref=e293]:
+            - columnheader "Feature" [ref=e294]
+            - columnheader "Salary" [ref=e295]
+            - columnheader "PAYG" [ref=e296]
+            - columnheader "ABN" [ref=e297]
+            - columnheader "Pty Ltd" [ref=e298]
+        - rowgroup [ref=e299]:
+          - row "Paid annual leave ✔ Yes ✘ No ✘ No ✘ No" [ref=e300]:
+            - cell "Paid annual leave" [ref=e301]
+            - cell "✔ Yes" [ref=e302]
+            - cell "✘ No" [ref=e303]
+            - cell "✘ No" [ref=e304]
+            - cell "✘ No" [ref=e305]
+          - row "Paid sick leave ✔ Yes ✘ No ✘ No ✘ No" [ref=e306]:
+            - cell "Paid sick leave" [ref=e307]
+            - cell "✔ Yes" [ref=e308]
+            - cell "✘ No" [ref=e309]
+            - cell "✘ No" [ref=e310]
+            - cell "✘ No" [ref=e311]
+          - row "Paid public holidays ✔ Yes ✘ No ✘ No ✘ No" [ref=e312]:
+            - cell "Paid public holidays" [ref=e313]
+            - cell "✔ Yes" [ref=e314]
+            - cell "✘ No" [ref=e315]
+            - cell "✘ No" [ref=e316]
+            - cell "✘ No" [ref=e317]
+          - row "Employer-paid super ✔ Yes ~ Unlikely ✘ Self-fund ✘ Self-fund" [ref=e318]:
+            - cell "Employer-paid super" [ref=e319]
+            - cell "✔ Yes" [ref=e320]
+            - cell "~ Unlikely" [ref=e321]
+            - cell "✘ Self-fund" [ref=e322]
+            - cell "✘ Self-fund" [ref=e323]
+          - row "Redundancy entitlements ✔ Yes ✘ No ✘ No ✘ No" [ref=e324]:
+            - cell "Redundancy entitlements" [ref=e325]
+            - cell "✔ Yes" [ref=e326]
+            - cell "✘ No" [ref=e327]
+            - cell "✘ No" [ref=e328]
+            - cell "✘ No" [ref=e329]
+          - row "Workers comp (employer provided) ✔ Yes ✔ Yes ✘ Self-insure ✘ Self-insure" [ref=e330]:
+            - cell "Workers comp (employer provided)" [ref=e331]
+            - cell "✔ Yes" [ref=e332]
+            - cell "✔ Yes" [ref=e333]
+            - cell "✘ Self-insure" [ref=e334]
+            - cell "✘ Self-insure" [ref=e335]
+          - row "Job security High Medium Low Low" [ref=e336]:
+            - cell "Job security" [ref=e337]
+            - cell "High" [ref=e338]
+            - cell "Medium" [ref=e339]
+            - cell "Low" [ref=e340]
+            - cell "Low" [ref=e341]
+          - row "Rate / salary negotiation Low Medium High High" [ref=e342]:
+            - cell "Rate / salary negotiation" [ref=e343]
+            - cell "Low" [ref=e344]
+            - cell "Medium" [ref=e345]
+            - cell "High" [ref=e346]
+            - cell "High" [ref=e347]
+          - row "Tax minimisation options Low Low Medium High*" [ref=e348]:
+            - cell "Tax minimisation options" [ref=e349]
+            - cell "Low" [ref=e350]
+            - cell "Low" [ref=e351]
+            - cell "Medium" [ref=e352]
+            - cell "High*" [ref=e353]
+          - row "Profit retention at 25% company tax ✘ No ✘ No ✘ No ✘ PSI blocks this" [ref=e354]:
+            - cell "Profit retention at 25% company tax" [ref=e355]
+            - cell "✘ No" [ref=e356]
+            - cell "✘ No" [ref=e357]
+            - cell "✘ No" [ref=e358]
+            - cell "✘ PSI blocks this" [ref=e359]
+          - row "FBT-exempt EV benefit ✘ No ✘ No ✘ No ✔ Yes" [ref=e360]:
+            - cell "FBT-exempt EV benefit" [ref=e361]
+            - cell "✘ No" [ref=e362]
+            - cell "✘ No" [ref=e363]
+            - cell "✘ No" [ref=e364]
+            - cell "✔ Yes" [ref=e365]
+          - row "Admin / setup overhead None Minimal Low High" [ref=e366]:
+            - cell "Admin / setup overhead" [ref=e367]
+            - cell "None" [ref=e368]
+            - cell "Minimal" [ref=e369]
+            - cell "Low" [ref=e370]
+            - cell "High" [ref=e371]
+        - rowgroup [ref=e372]:
+          - row "* Pty Ltd tax minimisation (profit retention, income splitting) is significantly reduced when PSI rules apply. The FBT-exempt EV benefit is not affected by PSI." [ref=e373]:
+            - cell "* Pty Ltd tax minimisation (profit retention, income splitting) is significantly reduced when PSI rules apply. The FBT-exempt EV benefit is not affected by PSI." [ref=e374]:
+              - text: "* Pty Ltd tax minimisation (profit retention, income splitting) is significantly reduced when PSI rules apply. The FBT-exempt EV benefit is"
+              - strong [ref=e375]: not
+              - text: affected by PSI.
+    - region "PSI rules explained" [ref=e376]:
+      - heading "Understanding PSI Rules" [level=2] [ref=e377]
+      - paragraph [ref=e378]:
+        - strong [ref=e379]: Personal Services Income (PSI)
+        - text: applies when a company or trust earns income that is mainly a reward for an individual's personal skills or efforts. This covers the vast majority of IT, consulting, engineering, legal, and finance contractors.
+      - heading "The PSI Tests (applied in order)" [level=3] [ref=e380]
+      - generic [ref=e381]:
+        - generic [ref=e382]:
+          - heading "Step 1 — Results Test Best outcome" [level=4] [ref=e383]:
+            - text: Step 1 — Results Test
+            - generic [ref=e384]: Best outcome
+          - paragraph [ref=e385]:
+            - text: PSI rules do
+            - strong [ref=e386]: not
+            - text: apply if
+            - emphasis [ref=e387]: all three
+            - text: "are true:"
+          - list [ref=e388]:
+            - listitem [ref=e389]:
+              - text: You are engaged to produce a
+              - strong [ref=e390]: specific result
+              - text: (not paid by the hour or day)
+            - listitem [ref=e391]:
+              - text: You provide your
+              - strong [ref=e392]: own tools and equipment
+            - listitem [ref=e393]:
+              - text: You are
+              - strong [ref=e394]: liable to fix defects
+              - text: at your own cost
+          - paragraph [ref=e395]: ⚠ Most time-rate contractors fail this test because they are paid for time, not a result.
+        - generic [ref=e396]:
+          - heading "Step 2 — 80% Rule" [level=4] [ref=e397]
+          - paragraph [ref=e398]:
+            - text: If 80%+ of income comes from one client, you must pass
+            - emphasis [ref=e399]: one
+            - text: "of:"
+          - list [ref=e400]:
+            - listitem [ref=e401]:
+              - strong [ref=e402]: "Unrelated clients test:"
+              - text: Services to 2+ unrelated clients via genuine public advertising
+            - listitem [ref=e403]:
+              - strong [ref=e404]: "Employment test:"
+              - text: You employ someone doing 20%+ of the principal work
+            - listitem [ref=e405]:
+              - strong [ref=e406]: "Business premises test:"
+              - text: You use premises separate from home
+              - emphasis [ref=e407]: and
+              - text: client
+          - paragraph [ref=e408]: ⚠ Single-person contractors working for one client at a time almost always fail all three.
+      - heading "What Happens When PSI Applies to Your Pty Ltd" [level=3] [ref=e409]
+      - list [ref=e410]:
+        - listitem [ref=e411]:
+          - generic [ref=e412]: ✘
+          - text: Company
+          - strong [ref=e413]: cannot
+          - text: retain profit at 25% company tax rate — income is attributed to you personally
+        - listitem [ref=e414]:
+          - generic [ref=e415]: ✘
+          - strong [ref=e416]: Cannot
+          - text: split income with family members
+        - listitem [ref=e417]:
+          - generic [ref=e418]: ✔
+          - text: Director salary and super deductions still apply
+        - listitem [ref=e419]:
+          - generic [ref=e420]: ✔
+          - text: Legitimate business expenses still deductible
+        - listitem [ref=e421]:
+          - generic [ref=e422]: ✔
+          - strong [ref=e423]: FBT-exempt EV benefit is unaffected by PSI
+      - paragraph [ref=e424]: This calculator provides general information only and does not constitute financial or tax advice. Consult a registered tax agent or accountant for advice specific to your circumstances. PSI rules are complex — the ATO website has the authoritative guidance.
+  - contentinfo [ref=e425]:
+    - paragraph [ref=e426]:
+      - text: General information only — not financial or tax advice. 2024–25 tax year.
+      - link "ATO PSI guidance ↗" [ref=e427] [cursor=pointer]:
+        - /url: https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/income-you-must-declare/income-from-working/personal-services-income
+```

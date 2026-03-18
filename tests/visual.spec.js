@@ -7,8 +7,11 @@ const SNAP_DIR = path.join(__dirname, 'screenshots');
 
 test.describe('Visual screenshots', () => {
   test('desktop — full page', async ({ page }, testInfo) => {
-    await page.goto('/');
-    await page.waitForSelector('#card-salary .card-net', { state: 'visible' });
+    await page.goto('/contract-calculator/');
+    await page.waitForFunction(() => {
+      const body = document.querySelector('#card-salary-body');
+      return body && body.children.length > 3;
+    });
     await page.waitForTimeout(500);
 
     const dir = path.join(SNAP_DIR, testInfo.project.name);
@@ -21,8 +24,11 @@ test.describe('Visual screenshots', () => {
   });
 
   test('mobile — full page', async ({ page }, testInfo) => {
-    await page.goto('/');
-    await page.waitForSelector('#card-salary .card-net', { state: 'visible' });
+    await page.goto('/contract-calculator/');
+    await page.waitForFunction(() => {
+      const body = document.querySelector('#card-salary-body');
+      return body && body.children.length > 3;
+    });
     await page.waitForTimeout(500);
 
     const dir = path.join(SNAP_DIR, testInfo.project.name);

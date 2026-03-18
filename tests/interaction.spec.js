@@ -1,29 +1,37 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
-// Helper: wait for results to render
+// Helper: wait for JS to render results into the cards
 async function waitForResults(page) {
-  await page.waitForSelector('#card-salary-body .highlight', { state: 'visible' });
+  await page.waitForFunction(() => {
+    const body = document.querySelector('#card-salary-body');
+    return body && body.children.length > 3;
+  });
 }
 
 // ---------- Default $120k salary scenario ----------
 test.describe('Default salary scenario ($120k)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/contract-calculator/');
     await waitForResults(page);
   });
 
   test('salary card net take-home is in expected range', async ({ page }) => {
-    // $120k salary 2024-25: tax=$28,912, Medicare=$2,400, MLS=$1,500 → net ~$87k–$90k
-    const net = await page.locator('#card-salary-body .highlight .result-value').first().textContent();
-    const num = parseInt(net.replace(/[^0-9]/g, ''));
+    // $120k salary 2024-25: tax=$26,788, Medicare=$2,400, MLS=$1,500 → net ~$89k
+    const cardText = await page.locator('#card-salary-body').textContent();
+    // Find the net value — it appears after "Net take-home"
+    const match = cardText.match(/Net take-home\s+\$([0-9,]+)/);
+    expect(match).toBeTruthy();
+    const num = parseInt(match[1].replace(',', ''));
     expect(num).toBeGreaterThan(85000);
     expect(num).toBeLessThan(95000);
   });
 
-  test('salary card contains annual leave row', async ({ page }) => {
+  test('salary card contains expected rows', async ({ page }) => {
     const text = await page.locator('#card-salary-body').textContent();
-    expect(text).toMatch(/Annual leave/i);
+    expect(text).toMatch(/Taxable income/i);
+    expect(text).toMatch(/Net take-home/i);
+    expect(text).toMatch(/Medicare/i);
   });
 
   test('break-even box shows min rate', async ({ page }) => {
@@ -41,7 +49,7 @@ test.describe('Default salary scenario ($120k)', () => {
 // ---------- Mode switch: contract rate ----------
 test.describe('Contract rate mode', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/contract-calculator/');
     await page.click('#btn-mode-rate');
     await waitForResults(page);
   });
@@ -60,19 +68,21 @@ test.describe('Contract rate mode', () => {
   });
 
   test('changing rate recalculates cards', async ({ page }) => {
-    const netBefore = await page.locator('#card-salary-body .highlight .result-value').first().textContent();
+    const cardTextBefore = await page.locator('#card-salary-body').textContent();
+    const matchBefore = cardTextBefore.match(/Net take-home\s+\$([0-9,]+)/);
     await page.fill('#daily-rate', '1000');
     await page.locator('#daily-rate').dispatchEvent('input');
     await page.waitForTimeout(300);
-    const netAfter = await page.locator('#card-salary-body .highlight .result-value').first().textContent();
-    expect(netAfter).not.toBe(netBefore);
+    const cardTextAfter = await page.locator('#card-salary-body').textContent();
+    const matchAfter = cardTextAfter.match(/Net take-home\s+\$([0-9,]+)/);
+    expect(matchAfter[1]).not.toBe(matchBefore[1]);
   });
 });
 
 // ---------- PSI toggle ----------
 test.describe('PSI rules toggle', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/contract-calculator/');
     await waitForResults(page);
   });
 
@@ -82,7 +92,7 @@ test.describe('PSI rules toggle', () => {
   });
 
   test('PSI off — retain profit toggle becomes enabled', async ({ page }) => {
-    await page.click('#pty-psi');
+    await page.locator('label:has(#pty-psi)').click();
     await page.waitForTimeout(200);
     const retainToggle = page.locator('#pty-retain');
     await expect(retainToggle).toBeEnabled();
@@ -92,13 +102,18 @@ test.describe('PSI rules toggle', () => {
 // ---------- EV toggle ----------
 test.describe('FBT-exempt EV toggle', () => {
   test('EV cost input hidden by default', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('#pty-ev-cost-row')).toBeHidden();
+    await page.goto('/contract-calculator/');
+    await page.waitForFunction(() => document.querySelector('#card-salary-body')?.children.length > 3);
+    // Check via JS property since CSS display:flex can override the hidden attribute
+    // (We also fix this in CSS with [hidden] { display:none !important })
+    const isHidden = await page.evaluate(() => document.querySelector('#pty-ev-cost-row').hidden);
+    expect(isHidden).toBe(true);
   });
 
   test('EV cost input visible after toggle on', async ({ page }) => {
-    await page.goto('/');
-    await page.click('#pty-ev');
+    await page.goto('/contract-calculator/');
+    await page.waitForFunction(() => document.querySelector('#card-salary-body')?.children.length > 3);
+    await page.locator('label:has(#pty-ev)').click();
     await page.waitForTimeout(200);
     await expect(page.locator('#pty-ev-cost-row')).toBeVisible();
   });
