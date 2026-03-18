@@ -16,7 +16,8 @@ Build the contract-calculator web app as described in `plan.md`. This is a clien
 4. `app.js` — wire inputs to calculations, render results reactively
 
 ## Hosting Plan
-- GitHub Pages (free)
+- GitHub repo: https://github.com/oldwombat/contract-calculator
+- GitHub Pages (free) — enable at: https://github.com/oldwombat/contract-calculator/settings/pages
 - Custom domain supported — point DNS A records to GitHub's IPs, add CNAME for www
 - GitHub auto-provisions TLS via Let's Encrypt
 - Multiple project repos can each have their own custom domain — no conflict

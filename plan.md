@@ -1,5 +1,11 @@
 # Contract Calculator — Plan
 
+## Status
+✅ **Built and deployed** — https://github.com/oldwombat/contract-calculator
+
+To go live: Settings → Pages → source: `main` branch, root `/` → Save.
+Custom domain setup in `autopilot.md`.
+
 ## Problem
 People moving between salaried employment and contracting in Australia struggle to understand what contract rate is equivalent to their salary (or vice versa). This tool makes that comparison clear across all common contractor structures.
 
