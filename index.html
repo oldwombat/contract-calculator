@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Compare Australian salary vs contract rates across PAYG, ABN sole trader, and Pty Ltd structures. Understand what contract rate matches your salary — including leave, super, and PSI rules." />
+  <title>Contract Rate Calculator — Australia</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════ HEADER -->
+  <header>
+    <div class="header-inner">
+      <h1>Contract Rate Calculator</h1>
+      <p class="tagline">Australian salary vs contracting — what are you actually worth?</p>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════════ INPUT PANEL -->
+    <section class="panel inputs-panel" aria-label="Calculator inputs">
+
+      <!-- Primary input toggle -->
+      <div class="input-mode-toggle" role="group" aria-label="Input mode">
+        <button id="btn-mode-salary" class="mode-btn active" type="button">I know my salary</button>
+        <button id="btn-mode-rate"   class="mode-btn"        type="button">I know my contract rate</button>
+      </div>
+
+      <div class="inputs-grid">
+
+        <!-- Salary / rate inputs -->
+        <fieldset class="input-group" id="input-salary-group">
+          <legend>Annual Salary</legend>
+          <div class="input-row">
+            <label for="salary">Salary (excl. super)</label>
+            <div class="input-with-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="salary" value="120000" min="0" max="2000000" step="1000" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="input-group" id="input-rate-group" hidden>
+          <legend>Contract Rate</legend>
+          <div class="input-row">
+            <div class="rate-type-toggle" role="group" aria-label="Rate type">
+              <button id="btn-rate-daily"  class="rate-btn active" type="button">Daily</button>
+              <button id="btn-rate-hourly" class="rate-btn"        type="button">Hourly</button>
+            </div>
+          </div>
+          <div class="input-row" id="daily-rate-row">
+            <label for="daily-rate">Daily rate</label>
+            <div class="input-with-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="daily-rate" value="800" min="0" max="10000" step="50" />
+            </div>
+          </div>
+          <div class="input-row" id="hourly-rate-row" hidden>
+            <label for="hourly-rate">Hourly rate</label>
+            <div class="input-with-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="hourly-rate" value="100" min="0" max="2000" step="5" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Working days -->
+        <fieldset class="input-group">
+          <legend>Working Days <span class="legend-hint">(per year)</span></legend>
+          <div class="input-row">
+            <label for="annual-leave">Annual leave days</label>
+            <input type="number" id="annual-leave" value="20" min="0" max="50" step="1" />
+          </div>
+          <div class="input-row">
+            <label for="public-holidays">Public holidays</label>
+            <input type="number" id="public-holidays" value="10" min="0" max="20" step="1" />
+          </div>
+          <div class="input-row">
+            <label for="sick-leave">Sick leave days</label>
+            <input type="number" id="sick-leave" value="10" min="0" max="30" step="1" />
+          </div>
+          <div class="input-row">
+            <label for="gap-days">
+              Contractor gap days
+              <span class="field-hint">Unbillable days between contracts</span>
+            </label>
+            <input type="number" id="gap-days" value="15" min="0" max="60" step="1" />
+          </div>
+          <div class="input-row">
+            <label for="hours-per-day">Hours per day</label>
+            <input type="number" id="hours-per-day" value="8" min="1" max="24" step="0.5" />
+          </div>
+          <div class="days-summary" id="days-summary" aria-live="polite"></div>
+        </fieldset>
+
+        <!-- Rates & offsets -->
+        <fieldset class="input-group">
+          <legend>Rates &amp; Offsets</legend>
+          <div class="input-row">
+            <label for="super-rate">Super rate (SG)</label>
+            <div class="input-with-suffix">
+              <input type="number" id="super-rate" value="11.5" min="0" max="30" step="0.5" />
+              <span class="suffix">%</span>
+            </div>
+          </div>
+          <div class="input-row toggle-row">
+            <label for="private-health">Private hospital cover</label>
+            <label class="toggle-switch" aria-label="Private health insurance">
+              <input type="checkbox" id="private-health" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <p class="field-hint indent">No private cover + income &gt;$93k attracts Medicare Levy Surcharge (1–1.5%)</p>
+        </fieldset>
+
+        <!-- PAYG specific -->
+        <fieldset class="input-group">
+          <legend>PAYG Contractor</legend>
+          <div class="input-row toggle-row">
+            <label for="payg-super">Agency pays super</label>
+            <label class="toggle-switch" aria-label="Agency pays super">
+              <input type="checkbox" id="payg-super" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <p class="field-hint indent">Some labour-hire agencies pay super on top of your rate; many do not.</p>
+        </fieldset>
+
+        <!-- ABN sole trader -->
+        <fieldset class="input-group">
+          <legend>ABN Sole Trader</legend>
+          <div class="input-row">
+            <label for="abn-expenses">
+              Annual business expenses
+              <span class="field-hint">Accountant, insurance, equipment, etc.</span>
+            </label>
+            <div class="input-with-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="abn-expenses" value="2000" min="0" max="100000" step="500" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Pty Ltd -->
+        <fieldset class="input-group pty-group">
+          <legend>Pty Ltd Company</legend>
+
+          <div class="input-row">
+            <label for="pty-running-costs">
+              Company running costs
+              <span class="field-hint">ASIC fees, accountant, insurance</span>
+            </label>
+            <div class="input-with-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="pty-running-costs" value="3500" min="0" max="50000" step="500" />
+            </div>
+          </div>
+
+          <!-- PSI toggle -->
+          <div class="input-row toggle-row">
+            <label for="pty-psi">
+              PSI rules apply
+              <span class="field-hint">Personal Services Income — applies to most single-client contractors</span>
+            </label>
+            <label class="toggle-switch" aria-label="PSI rules apply">
+              <input type="checkbox" id="pty-psi" checked />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="psi-explainer" id="psi-explainer">
+            <strong>What is PSI?</strong> If 80%+ of your company's income comes from your personal skills/efforts
+            for one client, PSI rules apply. Your income is taxed at personal marginal rates regardless —
+            the 25% company profit-retention benefit is <em>not available</em>.
+            <a href="#psi-detail" class="learn-more">Learn more ↓</a>
+          </div>
+
+          <!-- Retain profit toggle (disabled when PSI on) -->
+          <div class="input-row toggle-row" id="pty-retain-row">
+            <label for="pty-retain">
+              Retain profit in company
+              <span class="field-hint" id="pty-retain-hint">Pay 25% company tax; take salary + franked dividends</span>
+            </label>
+            <label class="toggle-switch" aria-label="Retain profit in company">
+              <input type="checkbox" id="pty-retain" disabled />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+
+          <!-- EV toggle -->
+          <div class="input-row toggle-row">
+            <label for="pty-ev">
+              FBT-exempt EV
+              <span class="field-hint">Company-provided electric vehicle (below luxury threshold)</span>
+            </label>
+            <label class="toggle-switch" aria-label="FBT-exempt EV">
+              <input type="checkbox" id="pty-ev" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="input-row" id="pty-ev-cost-row" hidden>
+            <label for="pty-ev-cost">Annual EV cost (lease + running)</label>
+            <div class="input-with-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="pty-ev-cost" value="15000" min="0" max="100000" step="1000" />
+            </div>
+          </div>
+
+        </fieldset>
+
+      </div><!-- .inputs-grid -->
+    </section>
+
+    <!-- ═══════════════════════════════════════════════ BREAK-EVEN CALLOUT -->
+    <section class="breakeven-section" aria-label="Break-even summary" aria-live="polite">
+      <div class="breakeven-box" id="breakeven-box">
+        <!-- Populated by app.js -->
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ RESULTS CARDS -->
+    <section class="results-section" aria-label="Scenario comparison">
+      <h2 class="sr-only">Comparison results</h2>
+
+      <div class="cards-grid">
+
+        <!-- Salary card -->
+        <article class="card card-salary" id="card-salary">
+          <header class="card-header">
+            <h2>Salaried Employee</h2>
+            <span class="card-badge">Permanent</span>
+          </header>
+          <div class="card-body" id="card-salary-body">
+            <!-- Populated by app.js -->
+          </div>
+        </article>
+
+        <!-- PAYG card -->
+        <article class="card card-payg" id="card-payg">
+          <header class="card-header">
+            <h2>PAYG Contractor</h2>
+            <span class="card-badge">via Agency</span>
+          </header>
+          <div class="card-body" id="card-payg-body">
+            <!-- Populated by app.js -->
+          </div>
+        </article>
+
+        <!-- ABN card -->
+        <article class="card card-abn" id="card-abn">
+          <header class="card-header">
+            <h2>ABN Sole Trader</h2>
+            <span class="card-badge">Direct</span>
+          </header>
+          <div class="card-body" id="card-abn-body">
+            <!-- Populated by app.js -->
+          </div>
+        </article>
+
+        <!-- Pty Ltd card -->
+        <article class="card card-pty" id="card-pty">
+          <header class="card-header">
+            <h2>Pty Ltd Company</h2>
+            <span class="card-badge" id="pty-badge">PSI Applies</span>
+          </header>
+          <div class="card-body" id="card-pty-body">
+            <!-- Populated by app.js -->
+          </div>
+        </article>
+
+      </div><!-- .cards-grid -->
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ PROS & CONS -->
+    <section class="proscons-section panel" aria-label="Pros and cons comparison" id="pros-cons">
+      <h2>Pros &amp; Cons</h2>
+      <div class="table-scroll">
+        <table class="proscons-table">
+          <thead>
+            <tr>
+              <th scope="col">Feature</th>
+              <th scope="col" class="col-salary">Salary</th>
+              <th scope="col" class="col-payg">PAYG</th>
+              <th scope="col" class="col-abn">ABN</th>
+              <th scope="col" class="col-pty">Pty Ltd</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Paid annual leave</td>
+              <td class="yes">✔ Yes</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+            </tr>
+            <tr>
+              <td>Paid sick leave</td>
+              <td class="yes">✔ Yes</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+            </tr>
+            <tr>
+              <td>Paid public holidays</td>
+              <td class="yes">✔ Yes</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+            </tr>
+            <tr>
+              <td>Employer-paid super</td>
+              <td class="yes">✔ Yes</td>
+              <td class="partial" id="pc-payg-super">~ Sometimes</td>
+              <td class="no">✘ Self-fund</td>
+              <td class="no">✘ Self-fund</td>
+            </tr>
+            <tr>
+              <td>Redundancy entitlements</td>
+              <td class="yes">✔ Yes</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+            </tr>
+            <tr>
+              <td>Workers comp (employer provided)</td>
+              <td class="yes">✔ Yes</td>
+              <td class="yes">✔ Yes</td>
+              <td class="no">✘ Self-insure</td>
+              <td class="no">✘ Self-insure</td>
+            </tr>
+            <tr>
+              <td>Job security</td>
+              <td class="yes">High</td>
+              <td class="partial">Medium</td>
+              <td class="no">Low</td>
+              <td class="no">Low</td>
+            </tr>
+            <tr>
+              <td>Rate / salary negotiation</td>
+              <td class="no">Low</td>
+              <td class="partial">Medium</td>
+              <td class="yes">High</td>
+              <td class="yes">High</td>
+            </tr>
+            <tr>
+              <td>Tax minimisation options</td>
+              <td class="no">Low</td>
+              <td class="no">Low</td>
+              <td class="partial">Medium</td>
+              <td class="yes">High*</td>
+            </tr>
+            <tr id="pc-profit-retention-row">
+              <td>Profit retention at 25% company tax</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="no" id="pc-pty-retain">✘ PSI blocks this</td>
+            </tr>
+            <tr>
+              <td>FBT-exempt EV benefit</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="no">✘ No</td>
+              <td class="yes">✔ Yes</td>
+            </tr>
+            <tr>
+              <td>Admin / setup overhead</td>
+              <td class="yes">None</td>
+              <td class="yes">Minimal</td>
+              <td class="partial">Low</td>
+              <td class="no">High</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" class="table-footnote">
+                * Pty Ltd tax minimisation (profit retention, income splitting) is significantly reduced when PSI rules apply.
+                The FBT-exempt EV benefit is <strong>not</strong> affected by PSI.
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ PSI DETAIL -->
+    <section class="panel psi-detail-section" id="psi-detail" aria-label="PSI rules explained">
+      <h2>Understanding PSI Rules</h2>
+
+      <p>
+        <strong>Personal Services Income (PSI)</strong> applies when a company or trust earns income
+        that is mainly a reward for an individual's personal skills or efforts. This covers the vast
+        majority of IT, consulting, engineering, legal, and finance contractors.
+      </p>
+
+      <h3>The PSI Tests (applied in order)</h3>
+
+      <div class="psi-test-grid">
+        <div class="psi-test psi-test-results">
+          <h4>Step 1 — Results Test <span class="badge-good">Best outcome</span></h4>
+          <p>PSI rules do <strong>not</strong> apply if <em>all three</em> are true:</p>
+          <ol>
+            <li>You are engaged to produce a <strong>specific result</strong> (not paid by the hour or day)</li>
+            <li>You provide your <strong>own tools and equipment</strong></li>
+            <li>You are <strong>liable to fix defects</strong> at your own cost</li>
+          </ol>
+          <p class="psi-warning">⚠ Most time-rate contractors fail this test because they are paid for time, not a result.</p>
+        </div>
+
+        <div class="psi-test psi-test-80">
+          <h4>Step 2 — 80% Rule</h4>
+          <p>If 80%+ of income comes from one client, you must pass <em>one</em> of:</p>
+          <ul>
+            <li><strong>Unrelated clients test:</strong> Services to 2+ unrelated clients via genuine public advertising</li>
+            <li><strong>Employment test:</strong> You employ someone doing 20%+ of the principal work</li>
+            <li><strong>Business premises test:</strong> You use premises separate from home <em>and</em> client</li>
+          </ul>
+          <p class="psi-warning">⚠ Single-person contractors working for one client at a time almost always fail all three.</p>
+        </div>
+      </div>
+
+      <h3>What Happens When PSI Applies to Your Pty Ltd</h3>
+      <ul class="psi-effects">
+        <li><span class="icon-no">✘</span> Company <strong>cannot</strong> retain profit at 25% company tax rate — income is attributed to you personally</li>
+        <li><span class="icon-no">✘</span> <strong>Cannot</strong> split income with family members</li>
+        <li><span class="icon-yes">✔</span> Director salary and super deductions still apply</li>
+        <li><span class="icon-yes">✔</span> Legitimate business expenses still deductible</li>
+        <li><span class="icon-yes">✔</span> <strong>FBT-exempt EV benefit is unaffected by PSI</strong></li>
+      </ul>
+
+      <p class="disclaimer">
+        This calculator provides general information only and does not constitute financial or tax advice.
+        Consult a registered tax agent or accountant for advice specific to your circumstances.
+        PSI rules are complex — the ATO website has the authoritative guidance.
+      </p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>
+      General information only — not financial or tax advice. 2024–25 tax year.
+      <a href="https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/income-you-must-declare/income-from-working/personal-services-income" target="_blank" rel="noopener">ATO PSI guidance ↗</a>
+    </p>
+  </footer>
+
+  <script src="calculator.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>

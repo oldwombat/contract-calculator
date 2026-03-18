@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts (none expected — this is a static site)
+
+# Logs
+*.log
