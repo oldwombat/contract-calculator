@@ -5,14 +5,19 @@
 🐙 **Repo** — https://github.com/oldwombat/contract-calculator
 
 GitHub Pages is live on `main`. Push to `main` → Actions auto-deploys.
+localStorage key: `contractCalc_v4`
 
 ### Completed features
 - Four scenario comparison (Salary / PAYG Agency / ABN Sole Trader / Pty Ltd)
-- 2024-25 tax brackets, LITO, Medicare, MLS, super, PSI rules
-- Results comparison table (replaced 4 cards) + CSV download
+- 2024-25 tax brackets, LITO, super, PSI rules (Medicare excluded for simplicity)
+- Results comparison table + CSV download
 - Break-even callout (salary↔rate both directions)
 - Pros & Cons table
-- localStorage persistence (key `contractCalc_v2`) + Reset button
+- localStorage persistence + Reset button (top-right)
+- Super on top toggle (applies to Salary + PAYG)
+- GST on top toggle (applies to ABN + Pty Ltd)
+- PAYG agency payroll fee input (0–10%)
+- Monthly / weekly / daily take-home rows in results table
 - Dark mode, responsive / mobile layout
 - Playwright tests: 26/26 passing (desktop + mobile)
 
@@ -144,13 +149,14 @@ PSI rules can technically apply to sole traders too, but the practical effect is
 | Daily rate | — | Auto-calculated |
 | Annual leave days | 20 | Standard Australian |
 | Public holidays | 10 | National average |
-| Sick leave days | 10 | Standard entitlement |
+| Sick leave days | 10 | Standard entitlement (not used in calc) |
 | Hours per day | 8 | |
-| Contractor gap days | 15 | Days between contracts / unbillable |
 | Super rate | 11.5% | 2024-25 SG rate |
-| Business expenses (sole trader) | $2,000 | Accountant, insurance, etc. |
+| Super on top of base rate | Yes | Toggle: salary/rate is base; if off, back-calculates base |
+| PAYG agency payroll fee | 0% | 0–10%, some agencies charge 0.5–2% |
+| GST on top of base rate | Yes | ABN/Pty Ltd: shows GST-inclusive invoice total |
+| Business expenses (ABN) | $2,000 | Accountant, insurance, etc. |
 | Company running costs (Pty Ltd) | $3,500 | ASIC, accountant, insurance |
-| Private health insurance | No | Affects Medicare Levy Surcharge |
 | FBT-exempt EV | Off | Annual cost input when on |
 | PSI applies (Pty Ltd) | Yes | Toggle to unlock profit retention |
 
@@ -168,12 +174,11 @@ PSI rules can technically apply to sole traders too, but the practical effect is
 | $190,001+ | 45% |
 
 ### Other
-- Medicare Levy: 2% (threshold ~$26,000)
-- Medicare Levy Surcharge: 1–1.5% if no private health + income > $93,000
 - Low Income Tax Offset (LITO): up to $700 (tapers off above $37,500, gone at $66,667)
 - Super Guarantee: 11.5%
 - Company tax rate (base rate entity): 25%
 - Franking credits: company tax paid is a credit against personal tax on dividends
+- Medicare Levy, MLS, family tax benefits, HECS, child support **excluded** (see footer disclaimer)
 
 ---
 
@@ -184,14 +189,13 @@ Total weekdays:         260
   - Annual leave:       -20   (paid for salary, unpaid for contractors)
   - Public holidays:    -10   (paid for salary, unpaid for contractors)
   - Sick leave:         -10   (paid for salary, contractors wear this risk)
-  - Contractor gaps:    -15   (between contracts, only applies to contractors)
                         ────
-Salary effective days:  220   (230 if ignoring sick leave cost)
-PAYG/ABN billable days: 225   (260 - PH - gaps; leave unpaid)
+Salary effective days:  230
+Contractor billable:    250   (260 - public holidays only)
 ```
 
-Salary effective daily rate = Salary / 220 (default)
-Contractor break-even daily rate = (Salary + Super) / (contractor billable days)
+The 20-day difference = annual leave (the most intuitive explanation for new contractors).
+Sick leave days are shown as an input but not currently deducted from billable days.
 
 ---
 
