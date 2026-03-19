@@ -19,10 +19,10 @@ test.describe('Default salary scenario ($120k)', () => {
   test('salary card net take-home is in expected range', async ({ page }) => {
     // $120k salary 2024-25: income tax=$26,788 (no Medicare levy) → net ~$93,212
     const cardText = await page.locator('#results-tbody').textContent();
-    // Find the net value — it appears after "Net take-home"
-    const match = cardText.match(/Net take-home\s+\$([0-9,]+)/);
+    // Find the annual net value — it appears after "Net take-home (annual)"
+    const match = cardText.match(/Net take-home \(annual\)\s+\$([0-9,]+)/);
     expect(match).toBeTruthy();
-    const num = parseInt(match[1].replace(',', ''));
+    const num = parseInt(match[1].replace(/,/g, ''));
     expect(num).toBeGreaterThan(89000);
     expect(num).toBeLessThan(97000);
   });
@@ -69,12 +69,12 @@ test.describe('Contract rate mode', () => {
 
   test('changing rate recalculates cards', async ({ page }) => {
     const cardTextBefore = await page.locator('#results-tbody').textContent();
-    const matchBefore = cardTextBefore.match(/Net take-home\s+\$([0-9,]+)/);
+    const matchBefore = cardTextBefore.match(/Net take-home \(annual\)\s+\$([0-9,]+)/);
     await page.fill('#daily-rate', '1000');
     await page.locator('#daily-rate').dispatchEvent('input');
     await page.waitForTimeout(300);
     const cardTextAfter = await page.locator('#results-tbody').textContent();
-    const matchAfter = cardTextAfter.match(/Net take-home\s+\$([0-9,]+)/);
+    const matchAfter = cardTextAfter.match(/Net take-home \(annual\)\s+\$([0-9,]+)/);
     expect(matchAfter[1]).not.toBe(matchBefore[1]);
   });
 });

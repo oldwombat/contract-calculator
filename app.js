@@ -31,13 +31,15 @@
   const inAnnualLeave = $('annual-leave');
   const inPublicHols  = $('public-holidays');
   const inSickLeave   = $('sick-leave');
-  const inGapDays     = $('gap-days');
   const inHoursPerDay = $('hours-per-day');
   const daysSummary   = $('days-summary');
 
   // Rates & offsets
   const inSuperRate     = $('super-rate');
   const inSuperOnTop    = $('super-on-top');
+
+  // PAYG
+  const inPaygAgencyFee = $('payg-agency-fee');
 
   // ABN
   const inAbnExpenses = $('abn-expenses');
@@ -73,13 +75,13 @@
 
   // ── localStorage persistence ─────────────────────────────────────────────
 
-  const STORAGE_KEY = 'contractCalc_v3';
+  const STORAGE_KEY = 'contractCalc_v4';
 
   // All number inputs and checkboxes we want to persist
   const NUMBER_INPUTS = [
     'salary','daily-rate','hourly-rate',
-    'annual-leave','public-holidays','sick-leave','gap-days','hours-per-day',
-    'super-rate','abn-expenses','pty-running-costs','pty-ev-cost'
+    'annual-leave','public-holidays','sick-leave','hours-per-day',
+    'super-rate','payg-agency-fee','abn-expenses','pty-running-costs','pty-ev-cost'
   ];
   const CHECKBOX_INPUTS = [
     'super-on-top','gst-on-top','pty-psi','pty-retain','pty-ev'
@@ -167,7 +169,7 @@
       annualLeaveDays:   num(inAnnualLeave),
       publicHolidayDays: num(inPublicHols),
       sickLeaveDays:     num(inSickLeave),
-      contractorGapDays: num(inGapDays),
+      contractorGapDays: 0,
       hoursPerDay:       num(inHoursPerDay) || 8,
     };
   }
@@ -176,9 +178,13 @@
     const days = getDaysConfig();
     if (inputMode === 'salary') {
       // derive daily rate from salary using break-even formula
+      // when superOnTop is false, the entered salary is a total package — use base salary
+      const rawSalary = num(inSalary);
+      const sr = num(inSuperRate) / 100;
+      const baseSalary = inSuperOnTop.checked ? rawSalary : rawSalary / (1 + sr);
       const be = Calculator.breakEvenFromSalary({
-        salary:    num(inSalary),
-        superRate: num(inSuperRate) / 100,
+        salary:    baseSalary,
+        superRate: sr,
         days,
       });
       return be.dailyRate;
@@ -214,6 +220,7 @@
       ptyRetainProfit:      inPtyRetain.checked && !inPtyPsi.checked,
       ptyEvEnabled:         inPtyEv.checked,
       ptyEvAnnualCost:      num(inPtyEvCost),
+      paygAgencyFeeRate:    num(inPaygAgencyFee) / 100,
     };
   }
 
@@ -251,6 +258,11 @@
     rows += trow(grossLabel,
       fmtCurrency(salary.grossIncome), fmtCurrency(payg.grossIncome),
       fmtCurrency(abn.grossIncome),    fmtCurrency(pty.companyRevenue));
+
+    if (payg.agencyFee > 0)
+      rows += trow('Agency payroll fee',
+        D, '−' + fmtCurrency(payg.agencyFee), D, D,
+        '', ['', 'deduction', '', '']);
 
     if (showGst) {
       rows += trow('GST charged to client (10%)',
@@ -315,11 +327,28 @@
         '', ['', '', '', 'positive muted']);
 
     // ── Net result ───────────────────────────────────────────────────────
-    rows += trow('Net take-home',
+    rows += trow('Net take-home (annual)',
       fmtCurrency(salary.netIncome), fmtCurrency(payg.netIncome),
       fmtCurrency(abn.netIncome),    fmtCurrency(pty.netIncome),
       'section-top highlight-row',
       ['net-salary', 'net-payg', 'net-abn', 'net-pty']);
+
+    rows += trow('Monthly take-home',
+      fmtCurrency(salary.netIncome / 12), fmtCurrency(payg.netIncome / 12),
+      fmtCurrency(abn.netIncome / 12),    fmtCurrency(pty.netIncome / 12),
+      '', ['net-salary', 'net-payg', 'net-abn', 'net-pty']);
+
+    rows += trow('Weekly take-home',
+      fmtCurrency(salary.netIncome / 52), fmtCurrency(payg.netIncome / 52),
+      fmtCurrency(abn.netIncome / 52),    fmtCurrency(pty.netIncome / 52),
+      '', ['net-salary', 'net-payg', 'net-abn', 'net-pty']);
+
+    rows += trow('Daily take-home',
+      fmtCurrency(salary.netIncome / salary.billableDays),
+      fmtCurrency(payg.netIncome   / payg.billableDays),
+      fmtCurrency(abn.netIncome    / abn.billableDays),
+      fmtCurrency(pty.netIncome    / pty.billableDays),
+      '', ['net-salary', 'net-payg', 'net-abn', 'net-pty']);
 
     if (hasSelfSuper)
       rows += trow('Suggested super (self-fund)',
@@ -361,6 +390,7 @@
       ['', 'Salaried Employee', 'PAYG Contractor', 'ABN Sole Trader', 'Pty Ltd Company'],
       ['Days / year', salary.billableDays, payg.billableDays, abn.billableDays, pty.billableDays],
       ['Gross income', salary.grossIncome, payg.grossIncome, abn.grossIncome, pty.companyRevenue],
+      ['Agency payroll fee', '', -(payg.agencyFee || 0) || '', '', ''],
       ['Employer / agency super', salary.superEmployer, payg.superEmployer || '', '', ''],
       ['Business expenses', '', '', abn.businessExpenses || '', ''],
       ['Total package', salary.totalPackage, '', '', ''],
@@ -370,7 +400,10 @@
       ['Franked dividend', '', '', '', pty.dividends || ''],
       ['Taxable income', salary.taxableIncome, payg.taxableIncome, abn.taxableIncome, pty.taxableIncome],
       ['Income tax', -salary.incomeTax, -payg.incomeTax, -abn.incomeTax, -pty.incomeTax],
-      ['Net take-home', salary.netIncome, payg.netIncome, abn.netIncome, pty.netIncome],
+      ['Net take-home (annual)', salary.netIncome, payg.netIncome, abn.netIncome, pty.netIncome],
+      ['Monthly take-home', salary.netIncome/12, payg.netIncome/12, abn.netIncome/12, pty.netIncome/12],
+      ['Weekly take-home', salary.netIncome/52, payg.netIncome/52, abn.netIncome/52, pty.netIncome/52],
+      ['Daily take-home', salary.netIncome/salary.billableDays, payg.netIncome/payg.billableDays, abn.netIncome/abn.billableDays, pty.netIncome/pty.billableDays],
       ['Suggested super (self-fund)', '', '', abn.suggestedSuper || '', pty.suggestedSuper || ''],
       ['Effective daily rate', salary.effectiveDailyRate, payg.effectiveDailyRate, abn.effectiveDailyRate, pty.effectiveDailyRate],
       ['Effective hourly rate', salary.effectiveHourlyRate, payg.effectiveHourlyRate, abn.effectiveHourlyRate, pty.effectiveHourlyRate],
@@ -526,8 +559,8 @@
 
   // All other inputs
   [
-    inAnnualLeave, inPublicHols, inSickLeave, inGapDays,
-    inSuperRate, inAbnExpenses, inPtyRunning, inPtyEvCost,
+    inAnnualLeave, inPublicHols, inSickLeave,
+    inSuperRate, inPaygAgencyFee, inAbnExpenses, inPtyRunning, inPtyEvCost,
   ].forEach(el => el.addEventListener('input', recalculate));
 
   [inSuperOnTop, inGstOnTop, inPtyRetain].forEach(el =>

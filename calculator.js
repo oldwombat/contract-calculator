@@ -86,7 +86,7 @@ function totalPersonalTax(income) {
  * @property {number} annualLeaveDays     - default 20
  * @property {number} publicHolidayDays   - default 10
  * @property {number} sickLeaveDays       - default 10
- * @property {number} contractorGapDays   - default 15
+ * @property {number} contractorGapDays   - default 0 (removed; kept for compatibility)
  * @property {number} hoursPerDay         - default 8
  */
 
@@ -104,7 +104,7 @@ function salaryEffectiveDays(cfg) {
  * contracts are also unbillable.
  */
 function contractorBillableDays(cfg) {
-  return WORKING_DAYS_PER_YEAR - cfg.publicHolidayDays - cfg.contractorGapDays;
+  return WORKING_DAYS_PER_YEAR - cfg.publicHolidayDays;
 }
 
 // ---------------------------------------------------------------------------
@@ -128,6 +128,7 @@ function contractorBillableDays(cfg) {
  * @property {number}  ptyEvAnnualCost
  * @property {boolean} superOnTop  - salary/rate is quoted excl. super (super paid on top); false = total package/rate incl. super
  * @property {boolean} gstOnTop   - ABN/Pty rate is quoted excl. GST; show 10% GST as pass-through row
+ * @property {number}  paygAgencyFeeRate - agency payroll/admin fee as decimal (e.g. 0.01 = 1%)
  */
 
 /**
@@ -179,21 +180,25 @@ function salaryScenario(inputs) {
 // ---------------------------------------------------------------------------
 
 function paygScenario(inputs) {
-  const { contractDailyRate, superRate, days, superOnTop } = inputs;
+  const { contractDailyRate, superRate, days, superOnTop, paygAgencyFeeRate } = inputs;
   const billable      = contractorBillableDays(days);
   // When superOnTop is false, the rate is quoted inclusive of super — back-calculate base
   const grossIncome   = (superOnTop === false)
     ? contractDailyRate * billable / (1 + superRate)
     : contractDailyRate * billable;
   const superEmployer = grossIncome * superRate;
-  const taxableIncome = grossIncome;
+  const agencyFee     = grossIncome * (paygAgencyFeeRate || 0);
+  const taxableIncome = grossIncome - agencyFee;
   const taxes         = totalPersonalTax(taxableIncome);
-  const netIncome     = grossIncome - taxes.total;
+  const netIncome     = taxableIncome - taxes.total;
   const notes         = [];
 
   if (superOnTop === false) {
     notes.push('Rate quoted inclusive of super. Base rate: ' + fmt(contractDailyRate / (1 + superRate)) +
       '/day, super component: ' + fmt(contractDailyRate * superRate / (1 + superRate)) + '/day.');
+  }
+  if (agencyFee > 0) {
+    notes.push('Agency payroll fee of ' + pct(paygAgencyFeeRate) + ' (' + fmt(agencyFee) + '/yr) deducted from gross before tax.');
   }
   if (grossIncome > GST_REGISTRATION_THRESHOLD) {
     notes.push('Income may exceed $75k GST threshold — check with your agency.');
@@ -202,6 +207,7 @@ function paygScenario(inputs) {
   return {
     grossIncome,
     superEmployer,
+    agencyFee,
     totalPackage:    grossIncome + superEmployer,
     taxableIncome,
     incomeTax:       taxes.incomeTax,
