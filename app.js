@@ -484,7 +484,7 @@
 
       lastResults = { salary, payg, abn, pty };
 
-      renderResults(salary, payg, abn, pty);
+      renderResults(salary, payg, abn, pty, inputs);
       renderBreakeven(inputs);
       renderDaysSummary(inputs.days);
 
