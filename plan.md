@@ -1,10 +1,20 @@
 # Contract Calculator — Plan
 
 ## Status
-✅ **Built and deployed** — https://github.com/oldwombat/contract-calculator
+✅ **Built and deployed** — https://oldwombat.github.io/contract-calculator/
+🐙 **Repo** — https://github.com/oldwombat/contract-calculator
 
-To go live: Settings → Pages → source: `main` branch, root `/` → Save.
-Custom domain setup in `autopilot.md`.
+GitHub Pages is live on `main`. Push to `main` → Actions auto-deploys.
+
+### Completed features
+- Four scenario comparison (Salary / PAYG Agency / ABN Sole Trader / Pty Ltd)
+- 2024-25 tax brackets, LITO, Medicare, MLS, super, PSI rules
+- Results comparison table (replaced 4 cards) + CSV download
+- Break-even callout (salary↔rate both directions)
+- Pros & Cons table
+- localStorage persistence (key `contractCalc_v2`) + Reset button
+- Dark mode, responsive / mobile layout
+- Playwright tests: 26/26 passing (desktop + mobile)
 
 ## Problem
 People moving between salaried employment and contracting in Australia struggle to understand what contract rate is equivalent to their salary (or vice versa). This tool makes that comparison clear across all common contractor structures.
