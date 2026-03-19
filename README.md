@@ -66,7 +66,7 @@ When PSI applies to a Pty Ltd:
 
 Most time-rate contractors (paid per day or hour, working for one client) will have PSI apply. The calculator defaults to this and shows the impact clearly.
 
-See the [ATO's PSI guidance](https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/income-you-must-declare/income-from-working/personal-services-income) for authoritative detail.
+See the [ATO's PSI guidance](https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-concessions/personal-services-income/income-that-is-psi) for authoritative detail.
 
 ---
 
