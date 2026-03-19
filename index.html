@@ -107,26 +107,13 @@
             </div>
           </div>
           <div class="input-row toggle-row">
-            <label for="private-health">Private hospital cover</label>
-            <label class="toggle-switch" aria-label="Private health insurance">
-              <input type="checkbox" id="private-health" />
+            <label for="super-on-top">Super on top of base rate</label>
+            <label class="toggle-switch" aria-label="Super on top of base rate">
+              <input type="checkbox" id="super-on-top" checked />
               <span class="toggle-track"></span>
             </label>
           </div>
-          <p class="field-hint indent">No private cover + income &gt;$93k attracts Medicare Levy Surcharge (1–1.5%)</p>
-        </fieldset>
-
-        <!-- PAYG specific -->
-        <fieldset class="input-group">
-          <legend>PAYG Contractor</legend>
-          <div class="input-row toggle-row">
-            <label for="payg-super">Super paid on top of rate</label>
-            <label class="toggle-switch" aria-label="Super paid on top of rate">
-              <input type="checkbox" id="payg-super" checked />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-          <p class="field-hint indent">Agencies are legally required to pay the Super Guarantee (11.5%) on top of your rate. Uncheck only if your rate is quoted inclusive of super.</p>
+          <p class="field-hint indent">ON (default): salary/rate is base — super is paid on top (e.g. "$120k + super" or "$800/day + super"). Turn OFF if the figure already includes super (total package / all-in rate).</p>
         </fieldset>
 
         <!-- ABN sole trader -->
@@ -142,6 +129,14 @@
               <input type="number" id="abn-expenses" value="2000" min="0" max="100000" step="500" />
             </div>
           </div>
+          <div class="input-row toggle-row">
+            <label for="gst-on-top">GST on top of base rate</label>
+            <label class="toggle-switch" aria-label="GST on top of base rate">
+              <input type="checkbox" id="gst-on-top" checked />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <p class="field-hint indent">ON (default): rate is quoted excl. GST — you charge clients an additional 10% GST and remit it quarterly. Applies to both ABN and Pty Ltd. GST is pass-through and doesn't affect your net income.</p>
         </fieldset>
 
         <!-- Pty Ltd -->
@@ -421,6 +416,9 @@
     <p>
       General information only — not financial or tax advice. 2024–25 tax year.
       <a href="https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-concessions/personal-services-income/income-that-is-psi" target="_blank" rel="noopener">ATO PSI guidance ↗</a>
+    </p>
+    <p class="disclaimer-note">
+      This calculator applies basic ATO income tax rules and super only. It does not account for Medicare Levy, Medicare Levy Surcharge, family tax benefits, child support, HECS/HELP debt, private health insurance rebates, offsets other than LITO, state payroll taxes, or any other individual circumstances. Figures are estimates only — consult a registered tax agent or accountant for advice specific to your situation.
     </p>
   </footer>
 

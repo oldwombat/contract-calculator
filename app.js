@@ -37,13 +37,11 @@
 
   // Rates & offsets
   const inSuperRate     = $('super-rate');
-  const inPrivateHealth = $('private-health');
-
-  // PAYG
-  const inPaygSuper = $('payg-super');
+  const inSuperOnTop    = $('super-on-top');
 
   // ABN
   const inAbnExpenses = $('abn-expenses');
+  const inGstOnTop    = $('gst-on-top');
 
   // Pty Ltd
   const inPtyRunning  = $('pty-running-costs');
@@ -75,7 +73,7 @@
 
   // ── localStorage persistence ─────────────────────────────────────────────
 
-  const STORAGE_KEY = 'contractCalc_v2';
+  const STORAGE_KEY = 'contractCalc_v3';
 
   // All number inputs and checkboxes we want to persist
   const NUMBER_INPUTS = [
@@ -84,7 +82,7 @@
     'super-rate','abn-expenses','pty-running-costs','pty-ev-cost'
   ];
   const CHECKBOX_INPUTS = [
-    'private-health','payg-super','pty-psi','pty-retain','pty-ev'
+    'super-on-top','gst-on-top','pty-psi','pty-retain','pty-ev'
   ];
 
   function saveState() {
@@ -207,9 +205,9 @@
       salary:               getSalary(),
       contractDailyRate:    getDailyRate(),
       superRate:            num(inSuperRate) / 100,
-      hasPrivateHealth:     inPrivateHealth.checked,
+      superOnTop:           inSuperOnTop.checked,
       days,
-      paygSuperPaid:        inPaygSuper.checked,
+      gstOnTop:             inGstOnTop.checked,
       abnBusinessExpenses:  num(inAbnExpenses),
       ptyCompanyRunningCosts: num(inPtyRunning),
       ptyPsiApplies:        inPtyPsi.checked,
@@ -236,11 +234,12 @@
     </tr>`;
   }
 
-  function renderResults(salary, payg, abn, pty) {
+  function renderResults(salary, payg, abn, pty, inputs) {
     const deduct = ['deduction', 'deduction', 'deduction', 'deduction'];
-    const showMls     = salary.mls > 0 || payg.mls > 0 || abn.mls > 0 || pty.mls > 0;
-    const showPtyCo   = pty.companyTax > 0 || pty.dividends > 0;
+    const showPtyCo    = pty.companyTax > 0 || pty.dividends > 0;
     const hasSelfSuper = abn.suggestedSuper > 0 || pty.suggestedSuper > 0;
+    const showGst      = inputs.gstOnTop && (abn.gstAmount > 0 || pty.gstAmount > 0);
+    const grossLabel   = inputs.gstOnTop ? 'Gross income (ex-GST)' : 'Gross income';
 
     let rows = '';
 
@@ -249,9 +248,22 @@
       salary.billableDays, payg.billableDays, abn.billableDays, pty.billableDays,
       'section-top');
 
-    rows += trow('Gross income',
+    rows += trow(grossLabel,
       fmtCurrency(salary.grossIncome), fmtCurrency(payg.grossIncome),
       fmtCurrency(abn.grossIncome),    fmtCurrency(pty.companyRevenue));
+
+    if (showGst) {
+      rows += trow('GST charged to client (10%)',
+        D, D,
+        abn.gstAmount > 0 ? '+' + fmtCurrency(abn.gstAmount) : D,
+        pty.gstAmount > 0 ? '+' + fmtCurrency(pty.gstAmount) : D,
+        'row-muted', ['', '', 'muted', 'muted']);
+      rows += trow('Invoice total (incl. GST)',
+        D, D,
+        abn.invoiceTotal > 0 ? fmtCurrency(abn.invoiceTotal) : D,
+        pty.invoiceTotal > 0 ? fmtCurrency(pty.invoiceTotal) : D,
+        'row-muted', ['', '', 'muted positive', 'muted positive']);
+    }
 
     rows += trow('Employer / agency super',
       fmtCurrency(salary.superEmployer),
@@ -296,17 +308,6 @@
 
     rows += trow('Income tax', deductFmt(salary.incomeTax), deductFmt(payg.incomeTax),
       deductFmt(abn.incomeTax), deductFmt(pty.incomeTax), '', deduct);
-
-    rows += trow('Medicare levy', deductFmt(salary.medicare), deductFmt(payg.medicare),
-      deductFmt(abn.medicare), deductFmt(pty.medicare), '', deduct);
-
-    if (showMls)
-      rows += trow('Medicare Levy Surcharge',
-        salary.mls > 0 ? deductFmt(salary.mls) : D,
-        payg.mls   > 0 ? deductFmt(payg.mls)   : D,
-        abn.mls    > 0 ? deductFmt(abn.mls)    : D,
-        pty.mls    > 0 ? deductFmt(pty.mls)    : D,
-        '', ['deduction warn', 'deduction', 'deduction', 'deduction']);
 
     if (pty.frankingCredits > 0)
       rows += trow('Less: franking credits',
@@ -369,8 +370,6 @@
       ['Franked dividend', '', '', '', pty.dividends || ''],
       ['Taxable income', salary.taxableIncome, payg.taxableIncome, abn.taxableIncome, pty.taxableIncome],
       ['Income tax', -salary.incomeTax, -payg.incomeTax, -abn.incomeTax, -pty.incomeTax],
-      ['Medicare levy', -salary.medicare, -payg.medicare, -abn.medicare, -pty.medicare],
-      ['Medicare Levy Surcharge', -salary.mls || '', -payg.mls || '', -abn.mls || '', -pty.mls || ''],
       ['Net take-home', salary.netIncome, payg.netIncome, abn.netIncome, pty.netIncome],
       ['Suggested super (self-fund)', '', '', abn.suggestedSuper || '', pty.suggestedSuper || ''],
       ['Effective daily rate', salary.effectiveDailyRate, payg.effectiveDailyRate, abn.effectiveDailyRate, pty.effectiveDailyRate],
@@ -489,9 +488,9 @@
       renderBreakeven(inputs);
       renderDaysSummary(inputs.days);
 
-      // Pros/cons PAYG super row
-      pcPaygSuper.textContent = inputs.paygSuperPaid ? '✔ Yes (legally required)' : '~ Included in rate';
-      pcPaygSuper.className   = inputs.paygSuperPaid ? 'yes' : 'partial';
+      // Pros/cons super row
+      pcPaygSuper.textContent = inputs.superOnTop ? '✔ Yes (legally required)' : '~ Included in rate';
+      pcPaygSuper.className   = inputs.superOnTop ? 'yes' : 'partial';
 
     } catch (e) {
       console.error('Calculation error:', e);
@@ -531,7 +530,7 @@
     inSuperRate, inAbnExpenses, inPtyRunning, inPtyEvCost,
   ].forEach(el => el.addEventListener('input', recalculate));
 
-  [inPrivateHealth, inPaygSuper, inPtyRetain].forEach(el =>
+  [inSuperOnTop, inGstOnTop, inPtyRetain].forEach(el =>
     el.addEventListener('change', recalculate)
   );
 

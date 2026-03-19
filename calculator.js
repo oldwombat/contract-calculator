@@ -20,10 +20,6 @@ const TAX_BRACKETS = [
 
 const COMPANY_TAX_RATE = 0.25;
 const SUPER_GUARANTEE  = 0.115; // 2024-25
-const MEDICARE_RATE    = 0.02;
-const MEDICARE_SHADE_IN_THRESHOLD  = 26000;
-const MEDICARE_FULL_THRESHOLD      = 32500;  // approx — shade-in complete
-const MLS_THRESHOLD                = 93000;
 const GST_REGISTRATION_THRESHOLD   = 75000;
 const WORKING_DAYS_PER_YEAR        = 260;
 
@@ -71,46 +67,14 @@ function incomeTax(income) {
 }
 
 /**
- * Medicare Levy.
- * - Nil below shade-in threshold
- * - Shades in at 10c per $1 from $26,000 until full 2% kicks in
+ * Total personal tax: income tax only (LITO applied).
+ * Medicare Levy and Medicare Levy Surcharge are excluded for simplicity.
  * @param {number} income
- * @returns {number} Medicare levy
+ * @returns {{ incomeTax: number, total: number }}
  */
-function medicareLevy(income) {
-  if (income <= MEDICARE_SHADE_IN_THRESHOLD) return 0;
-  if (income <= MEDICARE_FULL_THRESHOLD) {
-    // 10% shade-in rate applies to excess over threshold
-    return Math.min((income - MEDICARE_SHADE_IN_THRESHOLD) * 0.10, income * MEDICARE_RATE);
-  }
-  return income * MEDICARE_RATE;
-}
-
-/**
- * Medicare Levy Surcharge (MLS).
- * Only applies if no private hospital cover and income > $93,000.
- * @param {number} income
- * @param {boolean} hasPrivateHealth
- * @returns {number} MLS amount
- */
-function medicareLevySurcharge(income, hasPrivateHealth) {
-  if (hasPrivateHealth || income <= MLS_THRESHOLD) return 0;
-  if (income <= 108000) return income * 0.01;
-  if (income <= 144000) return income * 0.0125;
-  return income * 0.015;
-}
-
-/**
- * Total tax burden: income tax + medicare levy + MLS.
- * @param {number} income
- * @param {boolean} hasPrivateHealth
- * @returns {{ incomeTax: number, medicare: number, mls: number, total: number }}
- */
-function totalPersonalTax(income, hasPrivateHealth) {
-  const tax      = incomeTax(income);
-  const medicare = medicareLevy(income);
-  const mls      = medicareLevySurcharge(income, hasPrivateHealth);
-  return { incomeTax: tax, medicare, mls, total: tax + medicare + mls };
+function totalPersonalTax(income) {
+  const tax = incomeTax(income);
+  return { incomeTax: tax, total: tax };
 }
 
 // ---------------------------------------------------------------------------
@@ -152,7 +116,7 @@ function contractorBillableDays(cfg) {
  * @property {number}  salary             - Annual salary excl. super
  * @property {number}  contractDailyRate  - Daily contract rate
  * @property {number}  superRate          - Super rate e.g. 0.115
- * @property {boolean} hasPrivateHealth
+
  * @property {DaysConfig} days
  * // Sole trader
  * @property {number}  abnBusinessExpenses
@@ -162,7 +126,8 @@ function contractorBillableDays(cfg) {
  * @property {boolean} ptyRetainProfit       - only relevant when !ptyPsiApplies
  * @property {boolean} ptyEvEnabled
  * @property {number}  ptyEvAnnualCost
- * @property {boolean} paygSuperPaid         - agency pays super
+ * @property {boolean} superOnTop  - salary/rate is quoted excl. super (super paid on top); false = total package/rate incl. super
+ * @property {boolean} gstOnTop   - ABN/Pty rate is quoted excl. GST; show 10% GST as pass-through row
  */
 
 /**
@@ -171,8 +136,6 @@ function contractorBillableDays(cfg) {
  * @property {number} superEmployer
  * @property {number} taxableIncome
  * @property {number} incomeTax
- * @property {number} medicare
- * @property {number} mls
  * @property {number} totalTax
  * @property {number} netIncome
  * @property {number} effectiveDailyRate
@@ -182,16 +145,18 @@ function contractorBillableDays(cfg) {
  */
 
 function salaryScenario(inputs) {
-  const { salary, superRate, hasPrivateHealth, days } = inputs;
-  const superAmount   = salary * superRate;
+  const { salary: rawSalary, superRate, days, superOnTop } = inputs;
+  // When superOnTop is false, the entered figure is a total package (incl. super)
+  const salary      = (superOnTop === false) ? rawSalary / (1 + superRate) : rawSalary;
+  const superAmount = salary * superRate;
   const taxableIncome = salary;
-  const taxes         = totalPersonalTax(taxableIncome, hasPrivateHealth);
+  const taxes         = totalPersonalTax(taxableIncome);
   const netIncome     = salary - taxes.total;
   const effDays       = salaryEffectiveDays(days);
   const notes         = [];
 
-  if (salary > GST_REGISTRATION_THRESHOLD) {
-    // not relevant for salary, just informational
+  if (superOnTop === false) {
+    notes.push('Total package entered. Base salary: ' + fmt(salary) + ', super: ' + fmt(superAmount) + '/yr.');
   }
 
   return {
@@ -200,8 +165,6 @@ function salaryScenario(inputs) {
     totalPackage:      salary + superAmount,
     taxableIncome,
     incomeTax:         taxes.incomeTax,
-    medicare:          taxes.medicare,
-    mls:               taxes.mls,
     totalTax:          taxes.total,
     netIncome,
     effectiveDailyRate:  salary / effDays,
@@ -216,18 +179,21 @@ function salaryScenario(inputs) {
 // ---------------------------------------------------------------------------
 
 function paygScenario(inputs) {
-  const { contractDailyRate, superRate, hasPrivateHealth, days, paygSuperPaid } = inputs;
+  const { contractDailyRate, superRate, days, superOnTop } = inputs;
   const billable      = contractorBillableDays(days);
-  const grossIncome   = contractDailyRate * billable;
-  const superEmployer = paygSuperPaid ? grossIncome * superRate : 0;
+  // When superOnTop is false, the rate is quoted inclusive of super — back-calculate base
+  const grossIncome   = (superOnTop === false)
+    ? contractDailyRate * billable / (1 + superRate)
+    : contractDailyRate * billable;
+  const superEmployer = grossIncome * superRate;
   const taxableIncome = grossIncome;
-  const taxes         = totalPersonalTax(taxableIncome, hasPrivateHealth);
+  const taxes         = totalPersonalTax(taxableIncome);
   const netIncome     = grossIncome - taxes.total;
   const notes         = [];
 
-  if (!paygSuperPaid) {
-    notes.push('No employer super. Consider setting aside ' +
-      fmt(grossIncome * superRate) + '/yr (' + pct(superRate) + ') yourself.');
+  if (superOnTop === false) {
+    notes.push('Rate quoted inclusive of super. Base rate: ' + fmt(contractDailyRate / (1 + superRate)) +
+      '/day, super component: ' + fmt(contractDailyRate * superRate / (1 + superRate)) + '/day.');
   }
   if (grossIncome > GST_REGISTRATION_THRESHOLD) {
     notes.push('Income may exceed $75k GST threshold — check with your agency.');
@@ -239,8 +205,6 @@ function paygScenario(inputs) {
     totalPackage:    grossIncome + superEmployer,
     taxableIncome,
     incomeTax:       taxes.incomeTax,
-    medicare:        taxes.medicare,
-    mls:             taxes.mls,
     totalTax:        taxes.total,
     netIncome,
     effectiveDailyRate:  contractDailyRate,
@@ -255,16 +219,20 @@ function paygScenario(inputs) {
 // ---------------------------------------------------------------------------
 
 function abnScenario(inputs) {
-  const { contractDailyRate, superRate, hasPrivateHealth, days, abnBusinessExpenses } = inputs;
+  const { contractDailyRate, superRate, days, abnBusinessExpenses, gstOnTop } = inputs;
   const billable      = contractorBillableDays(days);
   const grossInvoiced = contractDailyRate * billable;
+  const gstAmount     = gstOnTop ? grossInvoiced * 0.1 : 0;
   const taxableIncome = Math.max(0, grossInvoiced - abnBusinessExpenses);
-  const taxes         = totalPersonalTax(taxableIncome, hasPrivateHealth);
+  const taxes         = totalPersonalTax(taxableIncome);
   const suggestedSuper = grossInvoiced * superRate;
   const netIncome     = taxableIncome - taxes.total;
   const notes         = [];
 
-  if (grossInvoiced > GST_REGISTRATION_THRESHOLD) {
+  if (gstOnTop) {
+    notes.push('GST: you charge clients ' + fmt(gstAmount) + '/yr (10% on top) and remit it quarterly. ' +
+      'GST is pass-through — not included in your income or tax calculations.');
+  } else if (grossInvoiced > GST_REGISTRATION_THRESHOLD) {
     notes.push('Gross invoiced exceeds $75k — GST registration required. ' +
       'Charge +10% GST to clients and remit quarterly. ' +
       'GST is not shown here as it is pass-through.');
@@ -276,14 +244,14 @@ function abnScenario(inputs) {
 
   return {
     grossIncome:         grossInvoiced,
+    gstAmount,
+    invoiceTotal:        grossInvoiced + gstAmount,
     businessExpenses:    abnBusinessExpenses,
     superEmployer:       0,
     suggestedSuper,
     totalPackage:        grossInvoiced,
     taxableIncome,
     incomeTax:           taxes.incomeTax,
-    medicare:            taxes.medicare,
-    mls:                 taxes.mls,
     totalTax:            taxes.total,
     netIncome,
     effectiveDailyRate:  contractDailyRate,
@@ -318,17 +286,19 @@ function ptyLtdScenario(inputs) {
   const {
     contractDailyRate,
     superRate,
-    hasPrivateHealth,
+   
     days,
     ptyCompanyRunningCosts,
     ptyPsiApplies,
     ptyRetainProfit,
     ptyEvEnabled,
     ptyEvAnnualCost,
+    gstOnTop,
   } = inputs;
 
   const billable        = contractorBillableDays(days);
   const companyRevenue  = contractDailyRate * billable;
+  const gstAmount       = gstOnTop ? companyRevenue * 0.1 : 0;
   const evCost          = ptyEvEnabled ? ptyEvAnnualCost : 0;
 
   // Total deductible company costs (running costs + EV if applicable)
@@ -343,7 +313,7 @@ function ptyLtdScenario(inputs) {
     // pays personal tax at marginal rates. Super is self-funded.
     const directorSalary  = Math.max(0, companyRevenue - companyCosts);
     const suggestedSuper  = directorSalary * superRate;
-    const taxes           = totalPersonalTax(directorSalary, hasPrivateHealth);
+    const taxes           = totalPersonalTax(directorSalary);
     const netIncome       = directorSalary - taxes.total;
 
     notes.push('PSI rules apply: income is attributed to you personally. ' +
@@ -358,6 +328,8 @@ function ptyLtdScenario(inputs) {
 
     return {
       companyRevenue,
+      gstAmount,
+      invoiceTotal:        companyRevenue + gstAmount,
       companyCosts,
       companyTax:          0,
       directorSalary,
@@ -368,8 +340,6 @@ function ptyLtdScenario(inputs) {
       grossIncome:         directorSalary,
       taxableIncome:       directorSalary,
       incomeTax:           taxes.incomeTax,
-      medicare:            taxes.medicare,
-      mls:                 taxes.mls,
       totalTax:            taxes.total,
       netIncome,
       effectiveDailyRate:  contractDailyRate,
@@ -386,7 +356,7 @@ function ptyLtdScenario(inputs) {
     // B: Pay full salary — company profit = 0, director pays personal tax on salary
     const directorSalary  = Math.max(0, companyRevenue - companyCosts);
     const suggestedSuper  = directorSalary * superRate;
-    const taxes           = totalPersonalTax(directorSalary, hasPrivateHealth);
+    const taxes           = totalPersonalTax(directorSalary);
     const netIncome       = directorSalary - taxes.total;
 
     if (ptyEvEnabled) {
@@ -398,6 +368,8 @@ function ptyLtdScenario(inputs) {
 
     return {
       companyRevenue,
+      gstAmount,
+      invoiceTotal:        companyRevenue + gstAmount,
       companyCosts,
       companyTax:          0,
       directorSalary,
@@ -408,8 +380,6 @@ function ptyLtdScenario(inputs) {
       grossIncome:         directorSalary,
       taxableIncome:       directorSalary,
       incomeTax:           taxes.incomeTax,
-      medicare:            taxes.medicare,
-      mls:                 taxes.mls,
       totalTax:            taxes.total,
       netIncome,
       effectiveDailyRate:  contractDailyRate,
@@ -435,7 +405,7 @@ function ptyLtdScenario(inputs) {
 
   // Personal tax on total personal income (salary + grossed-up dividend)
   const totalPersonalIncome = minDirectorSalary + grossedUpDividend;
-  const personalTaxes     = totalPersonalTax(totalPersonalIncome, hasPrivateHealth);
+  const personalTaxes     = totalPersonalTax(totalPersonalIncome);
   const personalTaxAfterFC = Math.max(0, personalTaxes.total - frankingCredits);
   const netIncome         = minDirectorSalary + afterTaxProfit - personalTaxAfterFC;
 
@@ -454,6 +424,8 @@ function ptyLtdScenario(inputs) {
 
   return {
     companyRevenue,
+    gstAmount,
+    invoiceTotal:        companyRevenue + gstAmount,
     companyCosts,
     companyTax,
     directorSalary:      minDirectorSalary,
@@ -464,8 +436,6 @@ function ptyLtdScenario(inputs) {
     grossIncome:         minDirectorSalary + afterTaxProfit,
     taxableIncome:       totalPersonalIncome,
     incomeTax:           personalTaxes.incomeTax,
-    medicare:            personalTaxes.medicare,
-    mls:                 personalTaxes.mls,
     totalTax:            personalTaxAfterFC + companyTax,
     netIncome,
     effectiveDailyRate:  contractDailyRate,
@@ -544,8 +514,6 @@ function pct(r) {
 var Calculator = {
   // Tax primitives
   incomeTax,
-  medicareLevy,
-  medicareLevySurcharge,
   totalPersonalTax,
   lito,
   marginalRate,

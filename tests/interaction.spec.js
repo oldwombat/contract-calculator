@@ -17,21 +17,21 @@ test.describe('Default salary scenario ($120k)', () => {
   });
 
   test('salary card net take-home is in expected range', async ({ page }) => {
-    // $120k salary 2024-25: tax=$26,788, Medicare=$2,400, MLS=$1,500 → net ~$89k
+    // $120k salary 2024-25: income tax=$26,788 (no Medicare levy) → net ~$93,212
     const cardText = await page.locator('#results-tbody').textContent();
     // Find the net value — it appears after "Net take-home"
     const match = cardText.match(/Net take-home\s+\$([0-9,]+)/);
     expect(match).toBeTruthy();
     const num = parseInt(match[1].replace(',', ''));
-    expect(num).toBeGreaterThan(85000);
-    expect(num).toBeLessThan(95000);
+    expect(num).toBeGreaterThan(89000);
+    expect(num).toBeLessThan(97000);
   });
 
   test('salary card contains expected rows', async ({ page }) => {
     const text = await page.locator('#results-tbody').textContent();
     expect(text).toMatch(/Taxable income/i);
     expect(text).toMatch(/Net take-home/i);
-    expect(text).toMatch(/Medicare/i);
+    expect(text).toMatch(/Income tax/i);
   });
 
   test('break-even box shows min rate', async ({ page }) => {
