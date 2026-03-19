@@ -120,13 +120,13 @@
         <fieldset class="input-group">
           <legend>PAYG Contractor</legend>
           <div class="input-row toggle-row">
-            <label for="payg-super">Agency pays super</label>
-            <label class="toggle-switch" aria-label="Agency pays super">
-              <input type="checkbox" id="payg-super" />
+            <label for="payg-super">Super paid on top of rate</label>
+            <label class="toggle-switch" aria-label="Super paid on top of rate">
+              <input type="checkbox" id="payg-super" checked />
               <span class="toggle-track"></span>
             </label>
           </div>
-          <p class="field-hint indent">Some labour-hire agencies pay super on top of your rate; many do not.</p>
+          <p class="field-hint indent">Agencies are legally required to pay the Super Guarantee (11.5%) on top of your rate. Uncheck only if your rate is quoted inclusive of super.</p>
         </fieldset>
 
         <!-- ABN sole trader -->
@@ -312,9 +312,16 @@
             <tr>
               <td>Employer-paid super</td>
               <td class="yes">✔ Yes</td>
-              <td class="partial" id="pc-payg-super">~ Sometimes</td>
+              <td class="yes" id="pc-payg-super">✔ Yes (legally required)</td>
               <td class="no">✘ Self-fund</td>
               <td class="no">✘ Self-fund</td>
+            </tr>
+            <tr>
+              <td>Tax withheld at source</td>
+              <td class="yes">✔ Yes</td>
+              <td class="yes">✔ Yes (PAYG)</td>
+              <td class="no">✘ Quarterly instalments</td>
+              <td class="no">✘ Quarterly instalments</td>
             </tr>
             <tr>
               <td>Redundancy entitlements</td>

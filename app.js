@@ -76,7 +76,7 @@
 
   // ── localStorage persistence ─────────────────────────────────────────────
 
-  const STORAGE_KEY = 'contractCalc_v1';
+  const STORAGE_KEY = 'contractCalc_v2';
 
   // All number inputs and checkboxes we want to persist
   const NUMBER_INPUTS = [
@@ -484,8 +484,8 @@
       renderDaysSummary(inputs.days);
 
       // Pros/cons PAYG super row
-      pcPaygSuper.textContent = inputs.paygSuperPaid ? '✔ Yes (agency pays)' : '~ Unlikely';
-      pcPaygSuper.className   = inputs.paygSuperPaid ? 'yes' : 'no';
+      pcPaygSuper.textContent = inputs.paygSuperPaid ? '✔ Yes (legally required)' : '~ Included in rate';
+      pcPaygSuper.className   = inputs.paygSuperPaid ? 'yes' : 'partial';
 
     } catch (e) {
       console.error('Calculation error:', e);
