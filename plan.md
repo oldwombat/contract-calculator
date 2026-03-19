@@ -3,6 +3,7 @@
 ## Status
 ✅ **Built and deployed** — https://oldwombat.github.io/contract-calculator/
 🐙 **Repo** — https://github.com/oldwombat/contract-calculator
+📋 **Release notes** — [release-notes.md](./release-notes.md)
 
 GitHub Pages is live on `main`. Push to `main` → Actions auto-deploys.
 localStorage key: `contractCalc_v4`
@@ -20,6 +21,25 @@ localStorage key: `contractCalc_v4`
 - Monthly / weekly / daily take-home rows in results table
 - Dark mode, responsive / mobile layout
 - Playwright tests: 26/26 passing (desktop + mobile)
+
+---
+
+## 🔧 Current Sprint — Code Quality Cleanup (2026-03-19)
+
+Four dead-code / duplication issues identified in code review. No behaviour changes — tests must stay green.
+
+| # | Issue | Where | Status |
+|---|-------|--------|--------|
+| 1 | `fmtRate` is identical to `fmtCurrency` — delete & replace usages | `app.js` ~line 161 | ⬜ pending |
+| 2 | `totalPersonalTax()` vestigial wrapper — flatten to return plain number, fix 6 call sites | `calculator.js` line 75 | ⬜ pending |
+| 3 | `notes` arrays dead code (~40 lines) — never read by `app.js`, delete entirely | `calculator.js` all 4 scenarios | ⬜ pending |
+| 4 | `contractorGapDays: 0` dead property — remove from `getDaysConfig()` + typedef | `app.js` ~172, `calculator.js` ~89 | ⬜ pending |
+
+### Not changing
+- `breakEvenFromSalary` gross vs net — intentional simplification, documented in code
+- Mode-switch button repetition — extracting helper would obscure intent
+- `var Calculator` global — required for browser script tag loading
+- Inline template strings in `renderResults` — fine at this scale
 
 ## Problem
 People moving between salaried employment and contracting in Australia struggle to understand what contract rate is equivalent to their salary (or vice versa). This tool makes that comparison clear across all common contractor structures.

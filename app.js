@@ -158,10 +158,6 @@
     return '$' + n.toLocaleString('en-AU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   }
 
-  function fmtRate(n) {
-    return '$' + Math.round(n).toLocaleString('en-AU');
-  }
-
   // ── Input reading ────────────────────────────────────────────────────────
 
   function getDaysConfig() {
@@ -169,7 +165,6 @@
       annualLeaveDays:   num(inAnnualLeave),
       publicHolidayDays: num(inPublicHols),
       sickLeaveDays:     num(inSickLeave),
-      contractorGapDays: 0,
       hoursPerDay:       num(inHoursPerDay) || 8,
     };
   }
@@ -359,13 +354,13 @@
 
     // ── Effective rates ──────────────────────────────────────────────────
     rows += trow('Effective daily rate',
-      fmtRate(salary.effectiveDailyRate), fmtRate(payg.effectiveDailyRate),
-      fmtRate(abn.effectiveDailyRate),    fmtRate(pty.effectiveDailyRate),
+      fmtCurrency(salary.effectiveDailyRate), fmtCurrency(payg.effectiveDailyRate),
+      fmtCurrency(abn.effectiveDailyRate),    fmtCurrency(pty.effectiveDailyRate),
       'section-top');
 
     rows += trow('Effective hourly rate',
-      fmtRate(salary.effectiveHourlyRate), fmtRate(payg.effectiveHourlyRate),
-      fmtRate(abn.effectiveHourlyRate),    fmtRate(pty.effectiveHourlyRate));
+      fmtCurrency(salary.effectiveHourlyRate), fmtCurrency(payg.effectiveHourlyRate),
+      fmtCurrency(abn.effectiveHourlyRate),    fmtCurrency(pty.effectiveHourlyRate));
 
     resultsTbody.innerHTML = rows;
 
@@ -437,7 +432,7 @@
       ? 'Break-even rate used above'
       : 'Your contract rate = salary of';
     const thirdValue  = inputMode === 'salary'
-      ? fmtRate(rate) + '/day'
+      ? fmtCurrency(rate) + '/day'
       : fmtCurrency(eq.equivalentSalary);
     const thirdSub    = inputMode === 'salary'
       ? fmtCurrencyDecimal(rate / inputs.days.hoursPerDay) + '/hr &nbsp;·&nbsp; ' + Calculator.contractorBillableDays(inputs.days) + ' billable days'
@@ -454,7 +449,7 @@
         <div class="be-divider"></div>
         <div class="be-item">
           <span class="be-label">Min. contract rate to match</span>
-          <span class="be-value">${fmtRate(be.dailyRate)}/day</span>
+          <span class="be-value">${fmtCurrency(be.dailyRate)}/day</span>
           <span class="be-sub">${fmtCurrencyDecimal(be.hourlyRate)}/hr &nbsp;·&nbsp; ${Calculator.contractorBillableDays(inputs.days)} billable days</span>
         </div>
         <div class="be-divider"></div>

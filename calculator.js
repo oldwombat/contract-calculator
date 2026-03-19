@@ -70,11 +70,10 @@ function incomeTax(income) {
  * Total personal tax: income tax only (LITO applied).
  * Medicare Levy and Medicare Levy Surcharge are excluded for simplicity.
  * @param {number} income
- * @returns {{ incomeTax: number, total: number }}
+ * @returns {number}
  */
 function totalPersonalTax(income) {
-  const tax = incomeTax(income);
-  return { incomeTax: tax, total: tax };
+  return incomeTax(income);
 }
 
 // ---------------------------------------------------------------------------
@@ -86,7 +85,6 @@ function totalPersonalTax(income) {
  * @property {number} annualLeaveDays     - default 20
  * @property {number} publicHolidayDays   - default 10
  * @property {number} sickLeaveDays       - default 10
- * @property {number} contractorGapDays   - default 0 (removed; kept for compatibility)
  * @property {number} hoursPerDay         - default 8
  */
 
@@ -142,7 +140,6 @@ function contractorBillableDays(cfg) {
  * @property {number} effectiveDailyRate
  * @property {number} effectiveHourlyRate
  * @property {number} billableDays
- * @property {string[]} notes
  */
 
 function salaryScenario(inputs) {
@@ -152,26 +149,20 @@ function salaryScenario(inputs) {
   const superAmount = salary * superRate;
   const taxableIncome = salary;
   const taxes         = totalPersonalTax(taxableIncome);
-  const netIncome     = salary - taxes.total;
+  const netIncome     = salary - taxes;
   const effDays       = salaryEffectiveDays(days);
-  const notes         = [];
-
-  if (superOnTop === false) {
-    notes.push('Total package entered. Base salary: ' + fmt(salary) + ', super: ' + fmt(superAmount) + '/yr.');
-  }
 
   return {
     grossIncome:       salary,
     superEmployer:     superAmount,
     totalPackage:      salary + superAmount,
     taxableIncome,
-    incomeTax:         taxes.incomeTax,
-    totalTax:          taxes.total,
+    incomeTax:         taxes,
+    totalTax:          taxes,
     netIncome,
     effectiveDailyRate:  salary / effDays,
     effectiveHourlyRate: salary / effDays / days.hoursPerDay,
     billableDays:      effDays,
-    notes,
   };
 }
 
@@ -190,19 +181,7 @@ function paygScenario(inputs) {
   const agencyFee     = grossIncome * (paygAgencyFeeRate || 0);
   const taxableIncome = grossIncome - agencyFee;
   const taxes         = totalPersonalTax(taxableIncome);
-  const netIncome     = taxableIncome - taxes.total;
-  const notes         = [];
-
-  if (superOnTop === false) {
-    notes.push('Rate quoted inclusive of super. Base rate: ' + fmt(contractDailyRate / (1 + superRate)) +
-      '/day, super component: ' + fmt(contractDailyRate * superRate / (1 + superRate)) + '/day.');
-  }
-  if (agencyFee > 0) {
-    notes.push('Agency payroll fee of ' + pct(paygAgencyFeeRate) + ' (' + fmt(agencyFee) + '/yr) deducted from gross before tax.');
-  }
-  if (grossIncome > GST_REGISTRATION_THRESHOLD) {
-    notes.push('Income may exceed $75k GST threshold — check with your agency.');
-  }
+  const netIncome     = taxableIncome - taxes;
 
   return {
     grossIncome,
@@ -210,13 +189,12 @@ function paygScenario(inputs) {
     agencyFee,
     totalPackage:    grossIncome + superEmployer,
     taxableIncome,
-    incomeTax:       taxes.incomeTax,
-    totalTax:        taxes.total,
+    incomeTax:       taxes,
+    totalTax:        taxes,
     netIncome,
     effectiveDailyRate:  contractDailyRate,
     effectiveHourlyRate: contractDailyRate / days.hoursPerDay,
     billableDays:    billable,
-    notes,
   };
 }
 
@@ -232,21 +210,7 @@ function abnScenario(inputs) {
   const taxableIncome = Math.max(0, grossInvoiced - abnBusinessExpenses);
   const taxes         = totalPersonalTax(taxableIncome);
   const suggestedSuper = grossInvoiced * superRate;
-  const netIncome     = taxableIncome - taxes.total;
-  const notes         = [];
-
-  if (gstOnTop) {
-    notes.push('GST: you charge clients ' + fmt(gstAmount) + '/yr (10% on top) and remit it quarterly. ' +
-      'GST is pass-through — not included in your income or tax calculations.');
-  } else if (grossInvoiced > GST_REGISTRATION_THRESHOLD) {
-    notes.push('Gross invoiced exceeds $75k — GST registration required. ' +
-      'Charge +10% GST to clients and remit quarterly. ' +
-      'GST is not shown here as it is pass-through.');
-  }
-  notes.push('No employer super. Suggested voluntary super: ' +
-    fmt(suggestedSuper) + '/yr (' + pct(superRate) + ' of gross).');
-  notes.push('PSI rules may restrict home-office deductions. ' +
-    'Income is already taxed at marginal rates so the financial impact is minor.');
+  const netIncome     = taxableIncome - taxes;
 
   return {
     grossIncome:         grossInvoiced,
@@ -257,13 +221,12 @@ function abnScenario(inputs) {
     suggestedSuper,
     totalPackage:        grossInvoiced,
     taxableIncome,
-    incomeTax:           taxes.incomeTax,
-    totalTax:            taxes.total,
+    incomeTax:           taxes,
+    totalTax:            taxes,
     netIncome,
     effectiveDailyRate:  contractDailyRate,
     effectiveHourlyRate: contractDailyRate / days.hoursPerDay,
     billableDays:        billable,
-    notes,
   };
 }
 
@@ -310,8 +273,6 @@ function ptyLtdScenario(inputs) {
   // Total deductible company costs (running costs + EV if applicable)
   const companyCosts    = ptyCompanyRunningCosts + evCost;
 
-  const notes = [];
-
   // ── Mode A: PSI applies ──────────────────────────────────────────────────
   if (ptyPsiApplies) {
     // Income attributed to individual — 25% company retention is unavailable.
@@ -320,17 +281,7 @@ function ptyLtdScenario(inputs) {
     const directorSalary  = Math.max(0, companyRevenue - companyCosts);
     const suggestedSuper  = directorSalary * superRate;
     const taxes           = totalPersonalTax(directorSalary);
-    const netIncome       = directorSalary - taxes.total;
-
-    notes.push('PSI rules apply: income is attributed to you personally. ' +
-      'Profit cannot be retained at the 25% company tax rate.');
-    notes.push('Company still provides legitimate deductions: running costs, accountant fees, insurance.');
-    if (ptyEvEnabled) {
-      notes.push('FBT-exempt EV: ' + fmt(evCost) + '/yr paid by company pre-tax. ' +
-        'This saves approximately ' + fmt(evCost * marginalRate(directorSalary)) +
-        ' in personal tax (unaffected by PSI rules).');
-    }
-    notes.push('Suggested voluntary super: ' + fmt(suggestedSuper) + '/yr.');
+    const netIncome       = directorSalary - taxes;
 
     return {
       companyRevenue,
@@ -345,15 +296,14 @@ function ptyLtdScenario(inputs) {
       suggestedSuper,
       grossIncome:         directorSalary,
       taxableIncome:       directorSalary,
-      incomeTax:           taxes.incomeTax,
-      totalTax:            taxes.total,
+      incomeTax:           taxes,
+      totalTax:            taxes,
       netIncome,
       effectiveDailyRate:  contractDailyRate,
       effectiveHourlyRate: contractDailyRate / days.hoursPerDay,
       billableDays:        billable,
       psiApplies:          true,
       retainProfit:        false,
-      notes,
     };
   }
 
@@ -363,14 +313,7 @@ function ptyLtdScenario(inputs) {
     const directorSalary  = Math.max(0, companyRevenue - companyCosts);
     const suggestedSuper  = directorSalary * superRate;
     const taxes           = totalPersonalTax(directorSalary);
-    const netIncome       = directorSalary - taxes.total;
-
-    if (ptyEvEnabled) {
-      notes.push('FBT-exempt EV: ' + fmt(evCost) + '/yr paid by company pre-tax, saving ~' +
-        fmt(evCost * marginalRate(directorSalary)) + ' in personal tax.');
-    }
-    notes.push('PSI does not apply. Full salary drawn from company — no profit retained.');
-    notes.push('Suggested voluntary super: ' + fmt(suggestedSuper) + '/yr.');
+    const netIncome       = directorSalary - taxes;
 
     return {
       companyRevenue,
@@ -385,15 +328,14 @@ function ptyLtdScenario(inputs) {
       suggestedSuper,
       grossIncome:         directorSalary,
       taxableIncome:       directorSalary,
-      incomeTax:           taxes.incomeTax,
-      totalTax:            taxes.total,
+      incomeTax:           taxes,
+      totalTax:            taxes,
       netIncome,
       effectiveDailyRate:  contractDailyRate,
       effectiveHourlyRate: contractDailyRate / days.hoursPerDay,
       billableDays:        billable,
       psiApplies:          false,
       retainProfit:        false,
-      notes,
     };
   }
 
@@ -412,21 +354,10 @@ function ptyLtdScenario(inputs) {
   // Personal tax on total personal income (salary + grossed-up dividend)
   const totalPersonalIncome = minDirectorSalary + grossedUpDividend;
   const personalTaxes     = totalPersonalTax(totalPersonalIncome);
-  const personalTaxAfterFC = Math.max(0, personalTaxes.total - frankingCredits);
+  const personalTaxAfterFC = Math.max(0, personalTaxes - frankingCredits);
   const netIncome         = minDirectorSalary + afterTaxProfit - personalTaxAfterFC;
 
   const suggestedSuper    = (minDirectorSalary + afterTaxProfit) * superRate;
-
-  notes.push('PSI does not apply. Profit retained in company at 25% company tax rate.');
-  notes.push('Director takes $' + minDirectorSalary.toLocaleString() +
-    ' salary + ' + fmt(afterTaxProfit) + ' as a franked dividend.');
-  notes.push('Franking credits of ' + fmt(frankingCredits) +
-    ' offset personal tax on dividends.');
-  if (ptyEvEnabled) {
-    notes.push('FBT-exempt EV: ' + fmt(evCost) + '/yr paid by company pre-tax.');
-  }
-  notes.push('Note: company profits not distributed remain in the company and are ' +
-    'not personally accessible until paid as salary or dividend.');
 
   return {
     companyRevenue,
@@ -441,7 +372,7 @@ function ptyLtdScenario(inputs) {
     suggestedSuper,
     grossIncome:         minDirectorSalary + afterTaxProfit,
     taxableIncome:       totalPersonalIncome,
-    incomeTax:           personalTaxes.incomeTax,
+    incomeTax:           personalTaxes,
     totalTax:            personalTaxAfterFC + companyTax,
     netIncome,
     effectiveDailyRate:  contractDailyRate,
@@ -449,7 +380,6 @@ function ptyLtdScenario(inputs) {
     billableDays:        billable,
     psiApplies:          false,
     retainProfit:        true,
-    notes,
   };
 }
 
@@ -504,14 +434,6 @@ function marginalRate(income) {
   return 0;
 }
 
-function fmt(n) {
-  return '$' + Math.round(n).toLocaleString('en-AU');
-}
-
-function pct(r) {
-  return (r * 100).toFixed(1) + '%';
-}
-
 // ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
@@ -537,10 +459,6 @@ var Calculator = {
   // Break-even
   breakEvenFromSalary,
   equivalentSalaryFromRate,
-
-  // Formatting
-  fmt,
-  pct,
 
   // Constants (useful for UI labels)
   SUPER_GUARANTEE,
