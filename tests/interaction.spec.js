@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 // Helper: wait for JS to render results into the cards
 async function waitForResults(page) {
   await page.waitForFunction(() => {
-    const body = document.querySelector('#card-salary-body');
+    const body = document.querySelector('#results-tbody');
     return body && body.children.length > 3;
   });
 }
@@ -18,7 +18,7 @@ test.describe('Default salary scenario ($120k)', () => {
 
   test('salary card net take-home is in expected range', async ({ page }) => {
     // $120k salary 2024-25: tax=$26,788, Medicare=$2,400, MLS=$1,500 → net ~$89k
-    const cardText = await page.locator('#card-salary-body').textContent();
+    const cardText = await page.locator('#results-tbody').textContent();
     // Find the net value — it appears after "Net take-home"
     const match = cardText.match(/Net take-home\s+\$([0-9,]+)/);
     expect(match).toBeTruthy();
@@ -28,7 +28,7 @@ test.describe('Default salary scenario ($120k)', () => {
   });
 
   test('salary card contains expected rows', async ({ page }) => {
-    const text = await page.locator('#card-salary-body').textContent();
+    const text = await page.locator('#results-tbody').textContent();
     expect(text).toMatch(/Taxable income/i);
     expect(text).toMatch(/Net take-home/i);
     expect(text).toMatch(/Medicare/i);
@@ -68,12 +68,12 @@ test.describe('Contract rate mode', () => {
   });
 
   test('changing rate recalculates cards', async ({ page }) => {
-    const cardTextBefore = await page.locator('#card-salary-body').textContent();
+    const cardTextBefore = await page.locator('#results-tbody').textContent();
     const matchBefore = cardTextBefore.match(/Net take-home\s+\$([0-9,]+)/);
     await page.fill('#daily-rate', '1000');
     await page.locator('#daily-rate').dispatchEvent('input');
     await page.waitForTimeout(300);
-    const cardTextAfter = await page.locator('#card-salary-body').textContent();
+    const cardTextAfter = await page.locator('#results-tbody').textContent();
     const matchAfter = cardTextAfter.match(/Net take-home\s+\$([0-9,]+)/);
     expect(matchAfter[1]).not.toBe(matchBefore[1]);
   });
@@ -103,7 +103,7 @@ test.describe('PSI rules toggle', () => {
 test.describe('FBT-exempt EV toggle', () => {
   test('EV cost input hidden by default', async ({ page }) => {
     await page.goto('/contract-calculator/');
-    await page.waitForFunction(() => document.querySelector('#card-salary-body')?.children.length > 3);
+    await page.waitForFunction(() => document.querySelector('#results-tbody')?.children.length > 3);
     // Check via JS property since CSS display:flex can override the hidden attribute
     // (We also fix this in CSS with [hidden] { display:none !important })
     const isHidden = await page.evaluate(() => document.querySelector('#pty-ev-cost-row').hidden);
@@ -112,7 +112,7 @@ test.describe('FBT-exempt EV toggle', () => {
 
   test('EV cost input visible after toggle on', async ({ page }) => {
     await page.goto('/contract-calculator/');
-    await page.waitForFunction(() => document.querySelector('#card-salary-body')?.children.length > 3);
+    await page.waitForFunction(() => document.querySelector('#results-tbody')?.children.length > 3);
     await page.locator('label:has(#pty-ev)').click();
     await page.waitForTimeout(200);
     await expect(page.locator('#pty-ev-cost-row')).toBeVisible();

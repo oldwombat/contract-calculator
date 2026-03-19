@@ -9,7 +9,7 @@ test.describe('Visual screenshots', () => {
   test('desktop — full page', async ({ page }, testInfo) => {
     await page.goto('/contract-calculator/');
     await page.waitForFunction(() => {
-      const body = document.querySelector('#card-salary-body');
+      const body = document.querySelector('#results-tbody');
       return body && body.children.length > 3;
     });
     await page.waitForTimeout(500);
@@ -19,14 +19,14 @@ test.describe('Visual screenshots', () => {
     await page.screenshot({ path: path.join(dir, 'home-default.png'), fullPage: true });
     // Just verify page renders with key elements
     await expect(page.locator('#breakeven-box')).toBeVisible();
-    await expect(page.locator('#card-salary')).toBeVisible();
-    await expect(page.locator('#card-pty')).toBeVisible();
+    await expect(page.locator("#results-table")).toBeVisible();
+    await expect(page.locator("#results-tbody")).toBeVisible();
   });
 
   test('mobile — full page', async ({ page }, testInfo) => {
     await page.goto('/contract-calculator/');
     await page.waitForFunction(() => {
-      const body = document.querySelector('#card-salary-body');
+      const body = document.querySelector('#results-tbody');
       return body && body.children.length > 3;
     });
     await page.waitForTimeout(500);

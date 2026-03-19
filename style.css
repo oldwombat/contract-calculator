@@ -391,189 +391,119 @@ input[type="number"]::-webkit-outer-spin-button { opacity: .4; }
   letter-spacing: .05em;
 }
 
-/* ── Results cards ────────────────────────────────────────── */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--gap);
-}
+/* ── Results table ────────────────────────────────────────── */
+.results-section { padding: 1.25rem; }
 
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.card-header {
+.section-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: .9rem 1.1rem .75rem;
-  border-bottom: 3px solid transparent;
+  margin-bottom: 1rem;
 }
 
-.card-salary .card-header { border-color: var(--color-salary); background: #f0fdfa; }
-.card-payg   .card-header { border-color: var(--color-payg);   background: #f5f3ff; }
-.card-abn    .card-header { border-color: var(--color-abn);    background: #fffbeb; }
-.card-pty    .card-header { border-color: var(--color-pty);    background: #fff1f2; }
+.section-header-row h2 { font-size: 1.2rem; }
 
-.card-header h2 {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.card-salary .card-header h2 { color: var(--color-salary); }
-.card-payg   .card-header h2 { color: var(--color-payg); }
-.card-abn    .card-header h2 { color: var(--color-abn); }
-.card-pty    .card-header h2 { color: var(--color-pty); }
-
-.card-badge {
-  font-size: .72rem;
-  font-weight: 700;
-  padding: .2rem .55rem;
-  border-radius: 99px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-
-.card-salary .card-badge { background: var(--color-salary); color: #fff; }
-.card-payg   .card-badge { background: var(--color-payg);   color: #fff; }
-.card-abn    .card-badge { background: var(--color-abn);    color: #fff; }
-.card-pty    .card-badge { background: var(--color-pty);    color: #fff; }
-
-.card-body {
-  padding: 1rem 1.1rem 1.1rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: .1rem;
-}
-
-/* Result rows inside cards */
-.result-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: .3rem 0;
-  font-size: .9rem;
-  gap: .5rem;
-}
-
-.result-row + .result-row {
-  border-top: 1px solid var(--color-bg);
-}
-
-.result-label {
-  color: var(--color-text-muted);
-  flex: 1;
-}
-
-.result-value {
-  font-family: var(--font-mono);
+.csv-btn {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: .38rem .85rem;
+  font-size: .83rem;
   font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.csv-btn:hover { background: var(--color-accent-dark); }
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+  min-width: 560px;
+}
+
+.results-table th,
+.results-table td {
+  padding: .45rem .75rem;
   text-align: right;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
   white-space: nowrap;
 }
 
-.result-row.highlight {
-  margin-top: .5rem;
-  padding-top: .6rem;
-  border-top: 2px solid var(--color-border) !important;
+.results-table th[scope="col"],
+.results-table th[scope="row"] {
+  font-family: var(--font-sans);
+  text-align: left;
 }
 
-.result-row.highlight .result-label { font-weight: 700; color: var(--color-text); }
-.result-row.highlight .result-value { font-size: 1.15rem; }
-
-.card-salary .result-row.highlight .result-value { color: var(--color-salary); }
-.card-payg   .result-row.highlight .result-value { color: var(--color-payg); }
-.card-abn    .result-row.highlight .result-value { color: var(--color-abn); }
-.card-pty    .result-row.highlight .result-value { color: var(--color-pty); }
-
-.result-row.deduction .result-value { color: var(--color-no); }
-.result-row.positive  .result-value { color: var(--color-yes); }
-.result-row.muted { opacity: .7; font-size: .84rem; }
-
-.card-divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: .5rem 0;
-}
-
-/* Rate display at bottom of card */
-.card-rates {
-  margin-top: .75rem;
-  padding: .6rem .75rem;
-  background: var(--color-bg);
-  border-radius: var(--radius-sm);
-  display: flex;
-  gap: .75rem 1rem;
-  justify-content: space-around;
-  flex-wrap: wrap;
-}
-
-.card-rate-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .15rem;
-}
-
-.card-rate-item .rate-label {
-  font-size: .73rem;
-  color: var(--color-text-muted);
+.results-table thead th[scope="col"] {
+  font-size: .82rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .05em;
-  font-weight: 600;
-}
-
-.card-rate-item .rate-value {
-  font-size: 1rem;
-  font-family: var(--font-mono);
-  font-weight: 700;
-}
-
-/* Card notes */
-.card-notes {
-  margin-top: .75rem;
-  display: flex;
-  flex-direction: column;
-  gap: .35rem;
-}
-
-.card-note {
-  font-size: .78rem;
-  color: var(--color-text-muted);
+  letter-spacing: .04em;
   background: var(--color-bg);
-  padding: .35rem .6rem;
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--color-border);
-  line-height: 1.4;
+  padding-top: .6rem;
+  padding-bottom: .6rem;
+  line-height: 1.35;
 }
 
-.card-note.warn {
-  background: var(--color-warn-bg);
-  border-color: #f59e0b;
-  color: var(--color-warn);
+.results-table thead .col-label { color: var(--color-text-muted); min-width: 180px; }
+.results-table thead .col-salary { color: var(--color-salary); }
+.results-table thead .col-payg   { color: var(--color-payg); }
+.results-table thead .col-abn    { color: var(--color-abn); }
+.results-table thead .col-pty    { color: var(--color-pty); }
+
+.results-table tbody th[scope="row"] {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-size: .85rem;
 }
 
-/* PSI warning badge on Pty Ltd card */
-.psi-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: .3rem;
-  font-size: .75rem;
+.results-table tr.section-top th,
+.results-table tr.section-top td {
+  border-top: 2px solid var(--color-border);
+}
+
+.results-table td.deduction  { color: var(--color-no); }
+.results-table td.positive   { color: var(--color-yes); }
+.results-table td.muted      { opacity: .65; }
+.results-table td.warn       { color: var(--color-warn); }
+
+.results-table tr.row-muted th,
+.results-table tr.row-muted td { opacity: .7; font-size: .83rem; }
+
+/* Net take-home highlight row */
+.results-table tr.highlight-row th,
+.results-table tr.highlight-row td {
   font-weight: 700;
-  padding: .2rem .55rem;
-  border-radius: var(--radius-sm);
-  background: #fef2f2;
-  color: var(--color-no);
-  border: 1px solid #fca5a5;
-  margin-bottom: .5rem;
+  font-size: 1rem;
+  background: var(--color-bg);
 }
+
+.results-table tr.highlight-row th { color: var(--color-text); }
+.results-table td.net-salary { color: var(--color-salary); }
+.results-table td.net-payg   { color: var(--color-payg); }
+.results-table td.net-abn    { color: var(--color-abn); }
+.results-table td.net-pty    { color: var(--color-pty); }
+
+.results-table tbody tr:hover { background: #f9fafb; }
+
+/* Scenario sub-label in column header */
+.scenario-sub {
+  display: block;
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  opacity: .8;
+  margin-top: .15rem;
+}
+
+.scenario-sub.badge-warn { color: var(--color-no);  opacity: 1; }
+.scenario-sub.badge-ok   { color: var(--color-yes); opacity: 1; }
 
 /* ── Pros & cons table ────────────────────────────────────── */
 .proscons-section h2 {
@@ -722,7 +652,6 @@ footer {
 
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .cards-grid { grid-template-columns: 1fr; }
   .inputs-grid { grid-template-columns: 1fr; }
   .breakeven-box { padding: 1.2rem; }
   .breakeven-box .be-value { font-size: 1.4rem; }
@@ -737,14 +666,11 @@ footer {
   .input-row label { min-width: 100%; }
   .input-row.toggle-row { flex-wrap: nowrap; }
   .input-row.toggle-row label:first-child { min-width: 0; flex: 1; }
-
-  .card-rates { justify-content: flex-start; gap: .75rem 1.5rem; }
 }
 
 @media (min-width: 900px) {
   main { padding: 2rem 1.5rem 4rem; }
   .inputs-grid { grid-template-columns: repeat(3, 1fr); }
-  .cards-grid  { grid-template-columns: repeat(4, 1fr); }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -758,10 +684,10 @@ footer {
   }
   header { background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); }
   .psi-test-results, .psi-test-80 { background: var(--color-bg); }
-  .proscons-table thead th { background: #111827; }
+  .proscons-table thead th,
+  .results-table thead th { background: #111827; }
+  .results-table tbody tr:hover { background: #1f2937; }
+  .results-table tr.highlight-row th,
+  .results-table tr.highlight-row td { background: #111827; }
   input[type="number"] { background: var(--color-bg); color: var(--color-text); }
-  .card-salary .card-header { background: #022c22; }
-  .card-payg   .card-header { background: #2e1065; }
-  .card-abn    .card-header { background: #1c1407; }
-  .card-pty    .card-header { background: #1c0000; }
 }

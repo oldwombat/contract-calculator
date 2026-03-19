@@ -57,22 +57,21 @@
   const psiExplainer  = $('psi-explainer');
 
   // Output
-  const breakevenBox    = $('breakeven-box');
-  const cardSalaryBody  = $('card-salary-body');
-  const cardPaygBody    = $('card-payg-body');
-  const cardAbnBody     = $('card-abn-body');
-  const cardPtyBody     = $('card-pty-body');
-  const ptyBadge        = $('pty-badge');
-  const pcPaygSuper     = $('pc-payg-super');
-  const pcPtyRetain     = $('pc-pty-retain');
+  const breakevenBox  = $('breakeven-box');
+  const resultsTbody  = $('results-tbody');
+  const ptyBadge      = $('pty-badge');
+  const pcPaygSuper   = $('pc-payg-super');
+  const pcPtyRetain   = $('pc-pty-retain');
 
-  // Reset button
+  // Buttons
   const btnReset = $('btn-reset');
+  const btnCsv   = $('btn-csv');
 
   // ── State ───────────────────────────────────────────────────────────────
 
-  let inputMode  = 'salary';  // 'salary' | 'rate'
-  let rateType   = 'daily';   // 'daily'  | 'hourly'
+  let inputMode   = 'salary';  // 'salary' | 'rate'
+  let rateType    = 'daily';   // 'daily'  | 'hourly'
+  let lastResults = null;      // { salary, payg, abn, pty } — for CSV
 
   // ── localStorage persistence ─────────────────────────────────────────────
 
@@ -222,167 +221,175 @@
 
   // ── Render helpers ───────────────────────────────────────────────────────
 
-  function row(label, value, classes = '') {
-    return `<div class="result-row ${classes}">
-      <span class="result-label">${label}</span>
-      <span class="result-value">${value}</span>
-    </div>`;
+  // ── Results table renderer ───────────────────────────────────────────────
+
+  const D = '—'; // placeholder for n/a cells
+
+  function trow(label, s, p, a, t, rowCls, cellCls) {
+    const cc = cellCls || ['', '', '', ''];
+    return `<tr class="${rowCls || ''}">
+      <th scope="row">${label}</th>
+      <td class="${cc[0]}">${s != null ? s : D}</td>
+      <td class="${cc[1]}">${p != null ? p : D}</td>
+      <td class="${cc[2]}">${a != null ? a : D}</td>
+      <td class="${cc[3]}">${t != null ? t : D}</td>
+    </tr>`;
   }
 
-  function divider() {
-    return '<div class="card-divider"></div>';
-  }
+  function renderResults(salary, payg, abn, pty) {
+    const deduct = ['deduction', 'deduction', 'deduction', 'deduction'];
+    const showMls     = salary.mls > 0 || payg.mls > 0 || abn.mls > 0 || pty.mls > 0;
+    const showPtyCo   = pty.companyTax > 0 || pty.dividends > 0;
+    const hasSelfSuper = abn.suggestedSuper > 0 || pty.suggestedSuper > 0;
 
-  function notesList(notes) {
-    if (!notes || !notes.length) return '';
-    return '<div class="card-notes">' +
-      notes.map(n => `<div class="card-note">${n}</div>`).join('') +
-      '</div>';
-  }
+    let rows = '';
 
-  // ── Card renderers ───────────────────────────────────────────────────────
+    // ── Income section ───────────────────────────────────────────────────
+    rows += trow('Days / year',
+      salary.billableDays, payg.billableDays, abn.billableDays, pty.billableDays,
+      'section-top');
 
-  function renderSalary(r) {
-    let html = '';
-    html += row('Annual salary',        fmtCurrency(r.grossIncome));
-    html += row('Employer super',        fmtCurrency(r.superEmployer),  'positive');
-    html += row('Total package',         fmtCurrency(r.totalPackage),   'muted');
-    html += divider();
-    html += row('Taxable income',        fmtCurrency(r.taxableIncome));
-    html += row('Income tax',            '−' + fmtCurrency(r.incomeTax),     'deduction');
-    html += row('Medicare levy',         '−' + fmtCurrency(r.medicare),      'deduction');
-    if (r.mls > 0)
-      html += row('Medicare Levy Surcharge', '−' + fmtCurrency(r.mls),   'deduction warn');
-    html += divider();
-    html += row('Net take-home',         fmtCurrency(r.netIncome),      'highlight');
-    html += `<div class="card-rates">
-      <div class="card-rate-item">
-        <span class="rate-label">Effective daily</span>
-        <span class="rate-value">${fmtRate(r.effectiveDailyRate)}</span>
-      </div>
-      <div class="card-rate-item">
-        <span class="rate-label">Effective hourly</span>
-        <span class="rate-value">${fmtRate(r.effectiveHourlyRate)}</span>
-      </div>
-      <div class="card-rate-item">
-        <span class="rate-label">Working days</span>
-        <span class="rate-value">${Math.round(r.billableDays)}</span>
-      </div>
-    </div>`;
-    if (r.notes && r.notes.length) html += notesList(r.notes);
-    cardSalaryBody.innerHTML = html;
-  }
+    rows += trow('Gross income',
+      fmtCurrency(salary.grossIncome), fmtCurrency(payg.grossIncome),
+      fmtCurrency(abn.grossIncome),    fmtCurrency(pty.companyRevenue));
 
-  function renderPayg(r) {
-    let html = '';
-    html += row('Days billed / year',   r.billableDays);
-    html += row('Gross income',          fmtCurrency(r.grossIncome));
-    if (r.superEmployer > 0)
-      html += row('Agency super',        fmtCurrency(r.superEmployer), 'positive');
-    html += divider();
-    html += row('Taxable income',        fmtCurrency(r.taxableIncome));
-    html += row('Income tax',            '−' + fmtCurrency(r.incomeTax),  'deduction');
-    html += row('Medicare levy',         '−' + fmtCurrency(r.medicare),   'deduction');
-    if (r.mls > 0)
-      html += row('Medicare Levy Surcharge', '−' + fmtCurrency(r.mls),   'deduction');
-    html += divider();
-    html += row('Net take-home',         fmtCurrency(r.netIncome),    'highlight');
-    html += `<div class="card-rates">
-      <div class="card-rate-item">
-        <span class="rate-label">Daily rate</span>
-        <span class="rate-value">${fmtRate(r.effectiveDailyRate)}</span>
-      </div>
-      <div class="card-rate-item">
-        <span class="rate-label">Hourly rate</span>
-        <span class="rate-value">${fmtRate(r.effectiveHourlyRate)}</span>
-      </div>
-    </div>`;
-    html += notesList(r.notes);
-    cardPaygBody.innerHTML = html;
-  }
+    rows += trow('Employer / agency super',
+      fmtCurrency(salary.superEmployer),
+      payg.superEmployer > 0 ? fmtCurrency(payg.superEmployer) : D,
+      D, D, '', ['positive', payg.superEmployer > 0 ? 'positive' : '', '', '']);
 
-  function renderAbn(r) {
-    let html = '';
-    html += row('Days billed / year',   r.billableDays);
-    html += row('Gross invoiced',        fmtCurrency(r.grossIncome));
-    if (r.businessExpenses > 0)
-      html += row('Business expenses',   '−' + fmtCurrency(r.businessExpenses), 'deduction');
-    html += divider();
-    html += row('Taxable income',        fmtCurrency(r.taxableIncome));
-    html += row('Income tax',            '−' + fmtCurrency(r.incomeTax),  'deduction');
-    html += row('Medicare levy',         '−' + fmtCurrency(r.medicare),   'deduction');
-    if (r.mls > 0)
-      html += row('Medicare Levy Surcharge', '−' + fmtCurrency(r.mls),   'deduction');
-    html += divider();
-    html += row('Net take-home',         fmtCurrency(r.netIncome),    'highlight');
-    html += row('Suggested super',        fmtCurrency(r.suggestedSuper), 'muted');
-    html += `<div class="card-rates">
-      <div class="card-rate-item">
-        <span class="rate-label">Daily rate</span>
-        <span class="rate-value">${fmtRate(r.effectiveDailyRate)}</span>
-      </div>
-      <div class="card-rate-item">
-        <span class="rate-label">Hourly rate</span>
-        <span class="rate-value">${fmtRate(r.effectiveHourlyRate)}</span>
-      </div>
-    </div>`;
-    html += notesList(r.notes);
-    cardAbnBody.innerHTML = html;
-  }
+    if (abn.businessExpenses > 0)
+      rows += trow('Business expenses',
+        D, D, '−' + fmtCurrency(abn.businessExpenses), D,
+        '', ['', '', 'deduction', '']);
 
-  function renderPty(r) {
-    let html = '';
+    rows += trow('Total package',
+      fmtCurrency(salary.totalPackage),
+      payg.superEmployer > 0 ? fmtCurrency(payg.grossIncome + payg.superEmployer) : D,
+      D, D, 'row-muted', ['muted', 'muted', '', '']);
 
-    // PSI banner
-    if (r.psiApplies) {
-      html += '<div class="psi-badge">⚠ PSI Applies — profit retention unavailable</div>';
+    // ── Company section (Pty Ltd) ────────────────────────────────────────
+    if (showPtyCo) {
+      rows += trow('Company costs',
+        D, D, D, '−' + fmtCurrency(pty.companyCosts),
+        'section-top', ['', '', '', 'deduction']);
+      rows += trow('Company tax (25%)',
+        D, D, D, '−' + fmtCurrency(pty.companyTax),
+        '', ['', '', '', 'deduction']);
+      rows += trow('Director salary',
+        D, D, D, fmtCurrency(pty.directorSalary));
+      if (pty.dividends > 0) {
+        rows += trow('Franked dividend',
+          D, D, D, fmtCurrency(pty.dividends),
+          '', ['', '', '', 'positive']);
+        rows += trow('Franking credits',
+          D, D, D, '+' + fmtCurrency(pty.frankingCredits),
+          '', ['', '', '', 'positive muted']);
+      }
     }
 
-    html += row('Company revenue',       fmtCurrency(r.companyRevenue));
-    html += row('Company costs',         '−' + fmtCurrency(r.companyCosts), 'deduction');
+    // ── Tax section ──────────────────────────────────────────────────────
+    rows += trow('Taxable income',
+      fmtCurrency(salary.taxableIncome), fmtCurrency(payg.taxableIncome),
+      fmtCurrency(abn.taxableIncome),    fmtCurrency(pty.taxableIncome),
+      'section-top');
 
-    if (r.companyTax > 0)
-      html += row('Company tax (25%)',   '−' + fmtCurrency(r.companyTax),   'deduction');
+    rows += trow('Income tax', deductFmt(salary.incomeTax), deductFmt(payg.incomeTax),
+      deductFmt(abn.incomeTax), deductFmt(pty.incomeTax), '', deduct);
 
-    html += divider();
-    html += row('Director salary',       fmtCurrency(r.directorSalary));
+    rows += trow('Medicare levy', deductFmt(salary.medicare), deductFmt(payg.medicare),
+      deductFmt(abn.medicare), deductFmt(pty.medicare), '', deduct);
 
-    if (r.dividends > 0) {
-      html += row('Franked dividend',    fmtCurrency(r.dividends),          'positive');
-      html += row('Franking credits',    '+' + fmtCurrency(r.frankingCredits), 'positive muted');
-    }
+    if (showMls)
+      rows += trow('Medicare Levy Surcharge',
+        salary.mls > 0 ? deductFmt(salary.mls) : D,
+        payg.mls   > 0 ? deductFmt(payg.mls)   : D,
+        abn.mls    > 0 ? deductFmt(abn.mls)    : D,
+        pty.mls    > 0 ? deductFmt(pty.mls)    : D,
+        '', ['deduction warn', 'deduction', 'deduction', 'deduction']);
 
-    html += divider();
-    html += row('Income tax',            '−' + fmtCurrency(r.incomeTax),    'deduction');
-    html += row('Medicare levy',         '−' + fmtCurrency(r.medicare),     'deduction');
-    if (r.mls > 0)
-      html += row('Medicare Levy Surcharge', '−' + fmtCurrency(r.mls),     'deduction');
-    if (r.frankingCredits > 0)
-      html += row('Less: franking credits', '−' + fmtCurrency(r.frankingCredits), 'positive muted');
+    if (pty.frankingCredits > 0)
+      rows += trow('Less: franking credits',
+        D, D, D, '−' + fmtCurrency(pty.frankingCredits),
+        '', ['', '', '', 'positive muted']);
 
-    html += divider();
-    html += row('Net take-home',         fmtCurrency(r.netIncome),          'highlight');
-    if (r.suggestedSuper > 0)
-      html += row('Suggested super',     fmtCurrency(r.suggestedSuper),     'muted');
+    // ── Net result ───────────────────────────────────────────────────────
+    rows += trow('Net take-home',
+      fmtCurrency(salary.netIncome), fmtCurrency(payg.netIncome),
+      fmtCurrency(abn.netIncome),    fmtCurrency(pty.netIncome),
+      'section-top highlight-row',
+      ['net-salary', 'net-payg', 'net-abn', 'net-pty']);
 
-    html += `<div class="card-rates">
-      <div class="card-rate-item">
-        <span class="rate-label">Daily rate</span>
-        <span class="rate-value">${fmtRate(r.effectiveDailyRate)}</span>
-      </div>
-      <div class="card-rate-item">
-        <span class="rate-label">Hourly rate</span>
-        <span class="rate-value">${fmtRate(r.effectiveHourlyRate)}</span>
-      </div>
-    </div>`;
-    html += notesList(r.notes);
-    cardPtyBody.innerHTML = html;
+    if (hasSelfSuper)
+      rows += trow('Suggested super (self-fund)',
+        D, D,
+        abn.suggestedSuper > 0 ? fmtCurrency(abn.suggestedSuper) : D,
+        pty.suggestedSuper > 0 ? fmtCurrency(pty.suggestedSuper) : D,
+        '', ['', '', 'muted', 'muted']);
 
-    // Update badge text
-    ptyBadge.textContent = r.psiApplies ? 'PSI Applies' :
-                           r.retainProfit ? 'Retain Profit' : 'Full Salary';
-    ptyBadge.style.background = r.psiApplies ? '#b91c1c' :
-                                r.retainProfit ? '#0f766e' : '#be123c';
+    // ── Effective rates ──────────────────────────────────────────────────
+    rows += trow('Effective daily rate',
+      fmtRate(salary.effectiveDailyRate), fmtRate(payg.effectiveDailyRate),
+      fmtRate(abn.effectiveDailyRate),    fmtRate(pty.effectiveDailyRate),
+      'section-top');
+
+    rows += trow('Effective hourly rate',
+      fmtRate(salary.effectiveHourlyRate), fmtRate(payg.effectiveHourlyRate),
+      fmtRate(abn.effectiveHourlyRate),    fmtRate(pty.effectiveHourlyRate));
+
+    resultsTbody.innerHTML = rows;
+
+    // Pty Ltd badge in column header
+    ptyBadge.textContent  = pty.psiApplies  ? '⚠ PSI Applies'   :
+                            pty.retainProfit ? 'Retain Profit'   : 'Full Salary';
+    ptyBadge.className    = 'scenario-sub ' + (pty.psiApplies    ? 'badge-warn' :
+                            pty.retainProfit                     ? 'badge-ok'   : '');
+  }
+
+  function deductFmt(n) {
+    return n > 0 ? '−' + fmtCurrency(n) : D;
+  }
+
+  // ── CSV export ───────────────────────────────────────────────────────────
+
+  function downloadCSV() {
+    if (!lastResults) return;
+    const { salary, payg, abn, pty } = lastResults;
+
+    const rows = [
+      ['', 'Salaried Employee', 'PAYG Contractor', 'ABN Sole Trader', 'Pty Ltd Company'],
+      ['Days / year', salary.billableDays, payg.billableDays, abn.billableDays, pty.billableDays],
+      ['Gross income', salary.grossIncome, payg.grossIncome, abn.grossIncome, pty.companyRevenue],
+      ['Employer / agency super', salary.superEmployer, payg.superEmployer || '', '', ''],
+      ['Business expenses', '', '', abn.businessExpenses || '', ''],
+      ['Total package', salary.totalPackage, '', '', ''],
+      ['Company costs', '', '', '', pty.companyCosts || ''],
+      ['Company tax (25%)', '', '', '', pty.companyTax || ''],
+      ['Director salary', '', '', '', pty.directorSalary || ''],
+      ['Franked dividend', '', '', '', pty.dividends || ''],
+      ['Taxable income', salary.taxableIncome, payg.taxableIncome, abn.taxableIncome, pty.taxableIncome],
+      ['Income tax', -salary.incomeTax, -payg.incomeTax, -abn.incomeTax, -pty.incomeTax],
+      ['Medicare levy', -salary.medicare, -payg.medicare, -abn.medicare, -pty.medicare],
+      ['Medicare Levy Surcharge', -salary.mls || '', -payg.mls || '', -abn.mls || '', -pty.mls || ''],
+      ['Net take-home', salary.netIncome, payg.netIncome, abn.netIncome, pty.netIncome],
+      ['Suggested super (self-fund)', '', '', abn.suggestedSuper || '', pty.suggestedSuper || ''],
+      ['Effective daily rate', salary.effectiveDailyRate, payg.effectiveDailyRate, abn.effectiveDailyRate, pty.effectiveDailyRate],
+      ['Effective hourly rate', salary.effectiveHourlyRate, payg.effectiveHourlyRate, abn.effectiveHourlyRate, pty.effectiveHourlyRate],
+    ];
+
+    const csv = rows.map(r =>
+      r.map(cell => '"' + String(cell).replace(/"/g, '""') + '"').join(',')
+    ).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'contract-calculator.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   // ── Break-even renderer ──────────────────────────────────────────────────
@@ -476,10 +483,9 @@
       const abn     = Calculator.abnScenario(inputs);
       const pty     = Calculator.ptyLtdScenario(inputs);
 
-      renderSalary(salary);
-      renderPayg(payg);
-      renderAbn(abn);
-      renderPty(pty);
+      lastResults = { salary, payg, abn, pty };
+
+      renderResults(salary, payg, abn, pty);
       renderBreakeven(inputs);
       renderDaysSummary(inputs.days);
 
@@ -586,5 +592,6 @@
   recalculate();
 
   btnReset.addEventListener('click', resetState);
+  btnCsv.addEventListener('click', downloadCSV);
 
 })();

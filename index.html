@@ -221,56 +221,27 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════ RESULTS CARDS -->
-    <section class="results-section" aria-label="Scenario comparison">
-      <h2 class="sr-only">Comparison results</h2>
-
-      <div class="cards-grid">
-
-        <!-- Salary card -->
-        <article class="card card-salary" id="card-salary">
-          <header class="card-header">
-            <h2>Salaried Employee</h2>
-            <span class="card-badge">Permanent</span>
-          </header>
-          <div class="card-body" id="card-salary-body">
+    <section class="results-section panel" aria-label="Scenario comparison">
+      <div class="section-header-row">
+        <h2>Results</h2>
+        <button id="btn-csv" type="button" class="csv-btn" title="Download results as CSV">⬇ Download CSV</button>
+      </div>
+      <div class="table-scroll">
+        <table class="results-table" id="results-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-label"></th>
+              <th scope="col" class="col-salary">Salaried Employee<br><span class="scenario-sub">Permanent</span></th>
+              <th scope="col" class="col-payg">PAYG Contractor<br><span class="scenario-sub">Via Agency</span></th>
+              <th scope="col" class="col-abn">ABN Sole Trader<br><span class="scenario-sub">Direct</span></th>
+              <th scope="col" class="col-pty">Pty Ltd Company<br><span class="scenario-sub" id="pty-badge">PSI Applies</span></th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody">
             <!-- Populated by app.js -->
-          </div>
-        </article>
-
-        <!-- PAYG card -->
-        <article class="card card-payg" id="card-payg">
-          <header class="card-header">
-            <h2>PAYG Contractor</h2>
-            <span class="card-badge">via Agency</span>
-          </header>
-          <div class="card-body" id="card-payg-body">
-            <!-- Populated by app.js -->
-          </div>
-        </article>
-
-        <!-- ABN card -->
-        <article class="card card-abn" id="card-abn">
-          <header class="card-header">
-            <h2>ABN Sole Trader</h2>
-            <span class="card-badge">Direct</span>
-          </header>
-          <div class="card-body" id="card-abn-body">
-            <!-- Populated by app.js -->
-          </div>
-        </article>
-
-        <!-- Pty Ltd card -->
-        <article class="card card-pty" id="card-pty">
-          <header class="card-header">
-            <h2>Pty Ltd Company</h2>
-            <span class="card-badge" id="pty-badge">PSI Applies</span>
-          </header>
-          <div class="card-body" id="card-pty-body">
-            <!-- Populated by app.js -->
-          </div>
-        </article>
-
-      </div><!-- .cards-grid -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- ══════════════════════════════════════════════════ PROS & CONS -->
